@@ -48,7 +48,7 @@ public class OfertaEstagio {
     private TipoEstagio tipo;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 30)
+    @Column(name = "status", length = 30, nullable = false)
     private StatusOferta status = StatusOferta.PENDENTE;
 
     @Column(name = "numero_vagas")
@@ -83,6 +83,29 @@ public class OfertaEstagio {
         this.numeroVagas = Math.max(1, this.numeroVagas);
     }
 
+    // ---------------------------
+    // MÉTODOS NOVOS (CORRIGIDOS)
+    // ---------------------------
+
+    /** Aprova a oferta */
+    public void aprovar() {
+        this.status = StatusOferta.APROVADO;
+    }
+
+    /** Rejeita a oferta */
+    public void rejeitar() {
+        this.status = StatusOferta.REJEITADO;
+    }
+
+    /** Verifica se está disponível */
+    public boolean estaDisponivel() {
+        return status == StatusOferta.APROVADO && numeroVagas > 0;
+    }
+
+    // ---------------------------
+    // Getters e setters
+    // ---------------------------
+
     public UUID getId() { return id; }
     public String getTitulo() { return titulo; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -113,15 +136,12 @@ public class OfertaEstagio {
     public void setRequisitos(String requisitos) { this.requisitos = requisitos; }
 
     public List<Candidatura> getCandidaturas() { return candidaturas; }
+
     public void adicionarCandidatura(Candidatura c) {
         if (!candidaturas.contains(c)) {
             candidaturas.add(c);
             c.setOferta(this);
         }
-    }
-
-    public boolean estaDisponivel() {
-        return status == StatusOferta.APROVADO && numeroVagas > 0;
     }
 
     @Override public boolean equals(Object o) {
