@@ -3,13 +3,14 @@ package com.upt.lp.portalestagios.entity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "coordenador")
 public class Coordenador extends Utilizador {
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "departamento_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "departamento_id", nullable = false)
     private Departamento departamento;
 
     @OneToMany(mappedBy = "coordenador", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -21,66 +22,48 @@ public class Coordenador extends Utilizador {
     @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Candidatura> candidaturasGeridas = new ArrayList<>();
 
-    public Coordenador() {
-        // Importante: JPA exige construtor vazio
-    }
-
+    public Coordenador() { super(); }
     public Coordenador(String nome, String email, String password, Departamento departamento) {
         super(nome, email, password);
         this.departamento = departamento;
     }
 
-    public void registarOferta(OfertaEstagio oferta) {
-        this.ofertasRegistadas.add(oferta);
-        oferta.setCoordenadorResponsavel(this);
-    }
+    public Departamento getDepartamento() { return departamento; }
+    public void setDepartamento(Departamento departamento) { this.departamento = departamento; }
 
-    public void aprovarOferta(OfertaEstagio oferta) {
-        oferta.aprovar();
-    }
+    public List<Curso> getCursosGeridos() { return cursosGeridos; }
+    public List<OfertaEstagio> getOfertasRegistadas() { return ofertasRegistadas; }
+    public List<Candidatura> getCandidaturasGeridas() { return candidaturasGeridas; }
 
-    public void rejeitarOferta(OfertaEstagio oferta) {
-        oferta.rejeitar();
-    }
-
+    // Helpers (mantêm ambos os lados)
     public void adicionarCursoGerido(Curso curso) {
-        this.cursosGeridos.add(curso);
+        if (!cursosGeridos.contains(curso)) {
+            cursosGeridos.add(curso);
+            curso.setCoordenador(this);
+        }
+    }
+    public void removerCursoGerido(Curso curso) {
+        if (cursosGeridos.remove(curso)) {
+            curso.setCoordenador(null);
+        }
     }
 
-    public Departamento getDepartamento() {
-        return departamento;
+    public void registarOferta(OfertaEstagio oferta) {
+        if (!ofertasRegistadas.contains(oferta)) {
+            ofertasRegistadas.add(oferta);
+            oferta.setCoordenadorResponsavel(this);
+        }
     }
 
-    public void setDepartamento(Departamento departamento) {
-        this.departamento = departamento;
-    }
-
-    public List<Curso> getCursosGeridos() {
-        return cursosGeridos;
-    }
-
-    public List<OfertaEstagio> getOfertasRegistadas() {
-        return ofertasRegistadas;
-    }
-
-    public List<Candidatura> getCandidaturasGeridas() {
-        return candidaturasGeridas;
-    }
-
-    public void adicionarCandidatura(Candidatura candidatura) {
-        this.candidaturasGeridas.add(candidatura);
-        candidatura.setCoordenadorResponsavel(this);
+    public void adicionarCandidatura(Candidatura c) {
+        if (!candidaturasGeridas.contains(c)) {
+            candidaturasGeridas.add(c);
+            c.setCoordenadorResponsavel(this);
+        }
     }
 
     @Override
     public String toString() {
-        return "Coordenador{" +
-                "id='" + getId() + '\'' +
-                ", nome='" + getNome() + '\'' +
-                ", departamento=" + (departamento != null ? departamento.getNome() : "N/A") +
-                ", cursosGeridos=" + cursosGeridos.size() +
-                ", ofertasRegistadas=" + ofertasRegistadas.size() +
-                '}';
+        return "Coordenador{" + getId() + " - " + getNome() + "}";
     }
 }
-

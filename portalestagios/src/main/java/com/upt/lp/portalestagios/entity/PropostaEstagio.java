@@ -1,9 +1,8 @@
 package com.upt.lp.portalestagios.entity;
 
+import com.upt.lp.portalestagios.enums.StatusProposta;
 import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -11,230 +10,59 @@ import java.util.Objects;
 public class PropostaEstagio {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", length = 36, nullable = false)
+    private String id;
 
-    @Column(name = "titulo", nullable = false, length = 200)
-    private String titulo;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "area_id")
+    private AreaEstagio area;
 
-    @Column(name = "descricao", length = 1000)
-    private String descricao;
-
-    @Column(name = "requisitos", length = 1000)
-    private String requisitos;
-
-    @Column(name = "beneficios", length = 1000)
-    private String beneficios;
-
-    @Column(name = "localizacao", length = 255)
-    private String localizacao;
-
-    @Column(name = "duracao_meses")
-    private int duracaoMeses;
-
-    @Column(name = "remunerado")
-    private boolean remunerado;
-
-    @Column(name = "valor_remuneracao")
-    private double valorRemuneracao;
-
-    @Column(name = "vagas_disponiveis")
-    private int vagasDisponiveis;
-
-    @Column(name = "tipo", length = 50)
-    private String tipo; // Ideal usar enum, se possível
-
-    @Column(name = "status", length = 50)
-    private String status; // Ideal usar enum, se possível
-
-    @Column(name = "data_proposta")
-    private LocalDate dataProposta;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "representante_id")
-    private RepresentanteEmpresa representante;
+    @ManyToOne
+    @JoinColumn(name = "coordenador_id")
+    private Coordenador coordenadorResponsavel;
 
-    @ManyToMany
-    @JoinTable(
-        name = "proposta_area",
-        joinColumns = @JoinColumn(name = "proposta_id"),
-        inverseJoinColumns = @JoinColumn(name = "area_id")
-    )
-    private List<AreaEstagio> areas = new ArrayList<>();
+    @Column(name = "titulo", nullable = false, length = 150)
+    private String titulo;
+
+    @Column(name = "descricao", nullable = false, length = 500)
+    private String descricao;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private StatusProposta status;
+
+    @Column(name = "data_registo", nullable = false)
+    private LocalDateTime dataRegisto;
 
     public PropostaEstagio() {
-        this.status = "PENDENTE";
-        this.dataProposta = LocalDate.now();
+        this.status = StatusProposta.SUBMETIDA;
+        this.dataRegisto = LocalDateTime.now();
     }
 
-    public PropostaEstagio(String titulo, String descricao, String requisitos, String localizacao, int duracaoMeses,
-                           boolean remunerado, int vagasDisponiveis, String tipo, Empresa empresa, RepresentanteEmpresa representante) {
+    public PropostaEstagio(AreaEstagio area, Empresa empresa, String titulo, String descricao) {
         this();
+        this.area = area;
+        this.empresa = empresa;
         this.titulo = titulo;
         this.descricao = descricao;
-        this.requisitos = requisitos;
-        this.localizacao = localizacao;
-        this.duracaoMeses = duracaoMeses;
-        this.remunerado = remunerado;
-        this.vagasDisponiveis = vagasDisponiveis;
-        this.tipo = tipo;
-        this.empresa = empresa;
-        this.representante = representante;
-    }
-	
-    public void adicionarArea(AreaEstagio area) {
-        this.areas.add(area);
     }
 
-    public void aprovar() {
-        this.status = "APROVADA";
+    public void aprovar(Coordenador c) {
+        this.coordenadorResponsavel = c;
+        this.status = StatusProposta.APROVADA;
     }
 
-    public void rejeitar() {
-        this.status = "REJEITADA";
+    public void rejeitar(Coordenador c) {
+        this.coordenadorResponsavel = c;
+        this.status = StatusProposta.REJEITADA;
     }
 
-    public boolean isPendente() {
-        return "PENDENTE".equals(this.status);
-    }
-
-    public boolean isAprovada() {
-        return "APROVADA".equals(this.status);
-    }
-
-    // Getters e Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public String getRequisitos() {
-        return requisitos;
-    }
-
-    public void setRequisitos(String requisitos) {
-        this.requisitos = requisitos;
-    }
-
-    public String getBeneficios() {
-        return beneficios;
-    }
-
-    public void setBeneficios(String beneficios) {
-        this.beneficios = beneficios;
-    }
-
-    public String getLocalizacao() {
-        return localizacao;
-    }
-
-    public void setLocalizacao(String localizacao) {
-        this.localizacao = localizacao;
-    }
-
-    public int getDuracaoMeses() {
-        return duracaoMeses;
-    }
-
-    public void setDuracaoMeses(int duracaoMeses) {
-        this.duracaoMeses = duracaoMeses;
-    }
-
-    public boolean isRemunerado() {
-        return remunerado;
-    }
-
-    public void setRemunerado(boolean remunerado) {
-        this.remunerado = remunerado;
-    }
-
-    public double getValorRemuneracao() {
-        return valorRemuneracao;
-    }
-
-    public void setValorRemuneracao(double valorRemuneracao) {
-        this.valorRemuneracao = valorRemuneracao;
-    }
-
-    public int getVagasDisponiveis() {
-        return vagasDisponiveis;
-    }
-
-    public void setVagasDisponiveis(int vagasDisponiveis) {
-        this.vagasDisponiveis = vagasDisponiveis;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDate getDataProposta() {
-        return dataProposta;
-    }
-
-    public void setDataProposta(LocalDate dataProposta) {
-        this.dataProposta = dataProposta;
-    }
-
-    public Empresa getEmpresa() {
-        return empresa;
-    }
-
-    public void setEmpresa(Empresa empresa) {
-        this.empresa = empresa;
-    }
-
-    public RepresentanteEmpresa getRepresentante() {
-        return representante;
-    }
-
-    public void setRepresentante(RepresentanteEmpresa representante) {
-        this.representante = representante;
-    }
-
-    public List<AreaEstagio> getAreas() {
-        return areas;
-    }
-
-    public void setAreas(List<AreaEstagio> areas) {
-        this.areas = areas;
-    }
+    public String getId() { return id; }
 
     @Override
     public boolean equals(Object o) {
@@ -245,19 +73,5 @@ public class PropostaEstagio {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "PropostaEstagio{" +
-                "id=" + id +
-                ", titulo='" + titulo + '\'' +
-                ", empresa=" + (empresa != null ? empresa.getNome() : "N/A") +
-                ", representante=" + (representante != null ? representante.getNome() : "N/A") +
-                ", status='" + status + '\'' +
-                '}';
-    }
+    public int hashCode() { return Objects.hash(id); }
 }
-

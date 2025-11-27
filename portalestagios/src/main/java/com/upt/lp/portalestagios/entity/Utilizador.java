@@ -3,7 +3,6 @@ package com.upt.lp.portalestagios.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @MappedSuperclass
@@ -31,18 +30,16 @@ public abstract class Utilizador {
 
     private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    /** Hash da password */
     private static String hashPassword(String plainPassword) {
         return encoder.encode(plainPassword);
     }
 
     public Utilizador() {
-        this.id = UUID.randomUUID().toString();
-        this.dataCriacao = LocalDateTime.now();
-        this.dataAtualizacao = LocalDateTime.now();
+        // Hibernate vai gerar o UUID — não gerar manualmente!
     }
 
     public Utilizador(String nome, String email, String password) {
-        this();
         this.nome = nome;
         this.email = email;
         this.password = hashPassword(password);
@@ -52,10 +49,6 @@ public abstract class Utilizador {
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getNome() {
@@ -85,14 +78,6 @@ public abstract class Utilizador {
         this.dataAtualizacao = LocalDateTime.now();
     }
 
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
-    }
-
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
-
     @PrePersist
     protected void onCreate() {
         this.dataCriacao = LocalDateTime.now();
@@ -116,14 +101,4 @@ public abstract class Utilizador {
     public int hashCode() {
         return Objects.hash(id);
     }
-
-    @Override
-    public String toString() {
-        return "Utilizador{" +
-                "id='" + id + '\'' +
-                ", nome='" + nome + '\'' +
-                ", email='" + email + '\'' +
-                '}';
-    }
 }
-

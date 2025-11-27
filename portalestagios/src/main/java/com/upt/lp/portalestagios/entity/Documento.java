@@ -10,116 +10,50 @@ public class Documento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", length = 36, updatable = false, nullable = false)
+    @Column(name = "id", nullable = false, length = 36)
     private String id;
 
-    @Column(name = "nome", nullable = false, length = 100)
-    private String nome;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "estagio_id")
+    private Estagio estagio;
 
     @Column(name = "tipo", nullable = false, length = 50)
-    private String tipo; // CV, Carta de Motivação, etc.
+    private String tipo;
 
-    @Column(name = "caminho_arquivo", nullable = false, length = 255)
-    private String caminhoArquivo;
-
-    @Column(name = "tamanho_bytes")
-    private long tamanhoBytes;
+    @Column(name = "ficheiro", nullable = false, length = 255)
+    private String ficheiro;
 
     @Column(name = "data_upload", nullable = false)
     private LocalDateTime dataUpload;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "estudante_id", nullable = false)
-    private Estudante estudante;
 
     public Documento() {
         this.dataUpload = LocalDateTime.now();
     }
 
-    public Documento(String nome, String tipo, String caminhoArquivo) {
+    public Documento(Estagio estagio, String tipo, String ficheiro) {
         this();
-        this.nome = nome;
+        this.estagio = estagio;
         this.tipo = tipo;
-        this.caminhoArquivo = caminhoArquivo;
+        this.ficheiro = ficheiro;
     }
 
-    // Getters e Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public String getCaminhoArquivo() {
-        return caminhoArquivo;
-    }
-
-    public void setCaminhoArquivo(String caminhoArquivo) {
-        this.caminhoArquivo = caminhoArquivo;
-    }
-
-    public long getTamanhoBytes() {
-        return tamanhoBytes;
-    }
-
-    public void setTamanhoBytes(long tamanhoBytes) {
-        this.tamanhoBytes = tamanhoBytes;
-    }
-
-    public LocalDateTime getDataUpload() {
-        return dataUpload;
-    }
-
-    public void setDataUpload(LocalDateTime dataUpload) {
-        this.dataUpload = dataUpload;
-    }
-
-    public Estudante getEstudante() {
-        return estudante;
-    }
-
-    public void setEstudante(Estudante estudante) {
-        this.estudante = estudante;
-    }
+    public String getId() { return id; }
+    public Estagio getEstagio() { return estagio; }
+    public void setEstagio(Estagio estagio) { this.estagio = estagio; }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getFicheiro() { return ficheiro; }
+    public void setFicheiro(String ficheiro) { this.ficheiro = ficheiro; }
+    public LocalDateTime getDataUpload() { return dataUpload; }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Documento)) return false;
-        Documento documento = (Documento) o;
-        return Objects.equals(id, documento.id);
+        Documento that = (Documento) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Documento{" +
-                "id='" + id + '\'' +
-                ", nome='" + nome + '\'' +
-                ", tipo='" + tipo + '\'' +
-                ", dataUpload=" + dataUpload +
-                '}';
-    }
+    public int hashCode() { return Objects.hash(id); }
 }

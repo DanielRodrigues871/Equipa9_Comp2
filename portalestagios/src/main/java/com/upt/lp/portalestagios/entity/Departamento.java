@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "departamento")
@@ -11,16 +12,16 @@ public class Departamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", length = 36, updatable = false, nullable = false)
-    private String id;
+    @Column(name = "id", updatable = false, nullable = false, length = 36)
+    private UUID id;
 
-    @Column(name = "nome", nullable = false, length = 100)
+    @Column(name = "nome", nullable = false, length = 150)
     private String nome;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 20)
+    @Column(name = "codigo", nullable = false, unique = true, length = 50)
     private String codigo;
 
-    @Column(name = "descricao", length = 255)
+    @Column(name = "descricao", length = 500)
     private String descricao;
 
     @OneToMany(mappedBy = "departamento", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -30,69 +31,34 @@ public class Departamento {
     private List<Coordenador> coordenadores = new ArrayList<>();
 
     public Departamento() {}
-
     public Departamento(String nome, String codigo) {
         this.nome = nome;
         this.codigo = codigo;
     }
 
+    public UUID getId() { return id; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    public String getDescricao() { return descricao; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+
+    public List<Curso> getCursos() { return cursos; }
+    public List<Coordenador> getCoordenadores() { return coordenadores; }
+
     public void adicionarCurso(Curso curso) {
-        this.cursos.add(curso);
-        curso.setDepartamento(this);
+        if (!cursos.contains(curso)) {
+            cursos.add(curso);
+            curso.setDepartamento(this);
+        }
     }
 
-    public void adicionarCoordenador(Coordenador coordenador) {
-        this.coordenadores.add(coordenador);
-        coordenador.setDepartamento(this);
-    }
-
-    // Getters e Setters
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getCodigo() {
-        return codigo;
-    }
-
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public List<Curso> getCursos() {
-        return cursos;
-    }
-
-    public void setCursos(List<Curso> cursos) {
-        this.cursos = cursos;
-    }
-
-    public List<Coordenador> getCoordenadores() {
-        return coordenadores;
-    }
-
-    public void setCoordenadores(List<Coordenador> coordenadores) {
-        this.coordenadores = coordenadores;
+    public void adicionarCoordenador(Coordenador c) {
+        if (!coordenadores.contains(c)) {
+            coordenadores.add(c);
+            c.setDepartamento(this);
+        }
     }
 
     @Override
@@ -102,19 +68,5 @@ public class Departamento {
         Departamento that = (Departamento) o;
         return Objects.equals(id, that.id);
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Departamento{" +
-                "id='" + id + '\'' +
-                ", nome='" + nome + '\'' +
-                ", codigo='" + codigo + '\'' +
-                ", cursos=" + cursos.size() +
-                '}';
-    }
+    @Override public int hashCode() { return Objects.hash(id); }
 }
