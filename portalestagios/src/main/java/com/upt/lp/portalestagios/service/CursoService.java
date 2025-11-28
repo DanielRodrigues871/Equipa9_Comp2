@@ -7,6 +7,7 @@ import com.upt.lp.portalestagios.repository.DepartamentoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CursoService {
@@ -24,27 +25,38 @@ public class CursoService {
     }
 
     public Curso buscar(String id) {
-        return cursoRepo.findById(id)
+        UUID uuid = UUID.fromString(id);
+        return cursoRepo.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
     }
 
     public Curso criar(String departamentoId, Curso c) {
-        Departamento dept = deptRepo.findById(departamentoId)
+        UUID deptUuid = UUID.fromString(departamentoId);
+
+        Departamento dept = deptRepo.findById(deptUuid)
                 .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
 
         c.setDepartamento(dept);
-
         return cursoRepo.save(c);
     }
 
     public Curso atualizar(String id, Curso dados) {
-        Curso c = buscar(id);
+        UUID uuid = UUID.fromString(id);
+
+        Curso c = cursoRepo.findById(uuid)
+                .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
+
         c.setNome(dados.getNome());
         c.setCodigo(dados.getCodigo());
+        c.setDuracaoAnos(dados.getDuracaoAnos());
+        c.setGrau(dados.getGrau());
+        c.setCoordenador(dados.getCoordenador());
+
         return cursoRepo.save(c);
     }
 
     public void apagar(String id) {
-        cursoRepo.deleteById(id);
+        UUID uuid = UUID.fromString(id);
+        cursoRepo.deleteById(uuid);
     }
 }

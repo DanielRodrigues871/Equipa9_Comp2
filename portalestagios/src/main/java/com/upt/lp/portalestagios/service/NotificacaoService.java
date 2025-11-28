@@ -1,33 +1,56 @@
 package com.upt.lp.portalestagios.service;
 
 import com.upt.lp.portalestagios.entity.Notificacao;
+import com.upt.lp.portalestagios.entity.Utilizador;
 import com.upt.lp.portalestagios.repository.NotificacaoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.upt.lp.portalestagios.repository.UtilizadorRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class NotificacaoService {
 
-    @Autowired
-    private NotificacaoRepository notificacaoRepository;
+    private final NotificacaoRepository repo;
+    private final UtilizadorRepository utilizadorRepo;
 
-    public List<Notificacao> findAll() {
-        return notificacaoRepository.findAll();
+    public NotificacaoService(NotificacaoRepository repo, UtilizadorRepository utilizadorRepo) {
+        this.repo = repo;
+        this.utilizadorRepo = utilizadorRepo;
     }
 
-    public Optional<Notificacao> findById(String id) {
-        return notificacaoRepository.findById(id);
+    public List<Notificacao> listarPorUtilizador(String utilizadorId) {
+        return repo.findByUtilizadorIdOrderByDataCriacaoDesc(utilizadorId);
     }
 
-    public Notificacao save(Notificacao notificacao) {
-        return notificacaoRepository.save(notificacao);
+    public List<Notificacao> notificacoesDoMes(String utilizadorId) {
+        YearMonth mesAtual = YearMonth.now();
+        LocalDateTime inicio = mesAtual.atDay(1).atStartOfDay();
+        LocalDateTime fim = mesAtual.atEndOfMonth().atTime(23, 59, 59);
+
+        return repo.findByUtilizadorIdAndDataCriacaoBetweenOrderByDataCriacaoDesc(utilizadorId, inicio, fim);
     }
 
-    public void delete(String id) {
-        notificacaoRepository.deleteById(id);
+    public Notificacao criar(String utilizadorId, Notificacao n) {
+        Utilizador u = utilizadorRepo.findById(utilizadorId)
+                .orElseThrow(() -> new RuntimeException("Utilizador não encontrado"));
+
+        n.setUtilizador(u);
+        return repo.save(n);
+    }
+
+    public Notificacao marcarComoLida(UUID id) {
+        Notificacao n = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notificação não encontrada"));
+
+        n.setLida(true);
+        return repo.save(n);
+    }
+
+    public void apagar(UUID id) {
+        repo.deleteById(id);
     }
 }
-

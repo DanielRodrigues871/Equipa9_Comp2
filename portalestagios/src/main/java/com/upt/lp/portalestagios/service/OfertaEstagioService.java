@@ -2,44 +2,73 @@ package com.upt.lp.portalestagios.service;
 
 import com.upt.lp.portalestagios.entity.OfertaEstagio;
 import com.upt.lp.portalestagios.repository.OfertaEstagioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class OfertaEstagioService {
 
-    @Autowired
-    private OfertaEstagioRepository ofertaRepository;
+    private final OfertaEstagioRepository repo;
 
-    public List<OfertaEstagio> findAll() {
-        return ofertaRepository.findAll();
+    public OfertaEstagioService(OfertaEstagioRepository repo) {
+        this.repo = repo;
     }
 
-    public Optional<OfertaEstagio> findById(String id) {
-        return ofertaRepository.findById(id);
+    // ----------------------
+    // CRUD
+    // ----------------------
+
+    public List<OfertaEstagio> listar() {
+        return repo.findAll();
     }
 
-    public OfertaEstagio save(OfertaEstagio oferta) {
-        return ofertaRepository.save(oferta);
+    public OfertaEstagio buscar(UUID id) {
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
     }
 
-    public void delete(String id) {
-        ofertaRepository.deleteById(id);
+    public OfertaEstagio criar(OfertaEstagio oferta) {
+        return repo.save(oferta);
     }
 
-    /** Métodos específicos */
-    public OfertaEstagio aprovar(String id) {
-        OfertaEstagio oferta = ofertaRepository.findById(id).orElseThrow();
-        oferta.aprovar();
-        return ofertaRepository.save(oferta);
+    public OfertaEstagio atualizar(UUID id, OfertaEstagio dados) {
+        OfertaEstagio o = buscar(id);
+
+        o.setTitulo(dados.getTitulo());
+        o.setDescricao(dados.getDescricao());
+        o.setEmpresa(dados.getEmpresa());
+        o.setCoordenadorResponsavel(dados.getCoordenadorResponsavel());
+        o.setCurso(dados.getCurso());
+        o.setArea(dados.getArea());
+        o.setTipo(dados.getTipo());
+        o.setNumeroVagas(dados.getNumeroVagas());
+        o.setDataInicio(dados.getDataInicio());
+        o.setDataFim(dados.getDataFim());
+        o.setLocalizacao(dados.getLocalizacao());
+        o.setRequisitos(dados.getRequisitos());
+
+        return repo.save(o);
     }
 
-    public OfertaEstagio rejeitar(String id) {
-        OfertaEstagio oferta = ofertaRepository.findById(id).orElseThrow();
-        oferta.rejeitar();
-        return ofertaRepository.save(oferta);
+    public void apagar(UUID id) {
+        repo.deleteById(id);
+    }
+
+    // ----------------------
+    // AÇÕES DE NEGÓCIO
+    // ----------------------
+
+    public OfertaEstagio aprovar(UUID id) {
+        OfertaEstagio o = buscar(id);
+        o.aprovar();
+        return repo.save(o);
+    }
+
+    public OfertaEstagio rejeitar(UUID id) {
+        OfertaEstagio o = buscar(id);
+        o.rejeitar();
+        return repo.save(o);
     }
 }

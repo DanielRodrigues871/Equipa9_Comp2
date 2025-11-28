@@ -5,6 +5,7 @@ import com.upt.lp.portalestagios.repository.EmpresaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EmpresaService {
@@ -15,35 +16,44 @@ public class EmpresaService {
         this.repo = repo;
     }
 
+    /** LISTAR TODAS AS EMPRESAS */
     public List<Empresa> listar() {
         return repo.findAll();
     }
 
+    /** BUSCAR EMPRESA POR ID */
     public Empresa buscar(String id) {
-        return repo.findById(id)
+        UUID uuid = UUID.fromString(id);
+        return repo.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
     }
 
+    /** CRIAR EMPRESA */
     public Empresa criar(Empresa empresa) {
         return repo.save(empresa);
     }
 
+    /** ATUALIZAR EMPRESA */
     public Empresa atualizar(String id, Empresa dados) {
-        Empresa e = empresaRepository.findById(id).orElseThrow();
+        UUID uuid = UUID.fromString(id);
+
+        Empresa e = repo.findById(uuid)
+                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
         e.setNome(dados.getNome());
         e.setNif(dados.getNif());
         e.setEmail(dados.getEmail());
-        e.setMorada(dados.getMorada());   // <---- CORRETO
+        e.setMorada(dados.getMorada());
         e.setTelefone(dados.getTelefone());
         e.setWebsite(dados.getWebsite());
         e.setAtiva(dados.isAtiva());
 
-        return empresaRepository.save(e);
+        return repo.save(e);
     }
 
-
+    /** APAGAR EMPRESA */
     public void apagar(String id) {
-        repo.deleteById(id);
+        UUID uuid = UUID.fromString(id);
+        repo.deleteById(uuid);
     }
 }

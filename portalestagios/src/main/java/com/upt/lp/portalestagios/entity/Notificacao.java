@@ -1,10 +1,7 @@
 package com.upt.lp.portalestagios.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -16,40 +13,31 @@ public class Notificacao {
     @Column(name = "id", updatable = false, nullable = false, length = 36)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destinatario_id", nullable = false)
-    private Utilizador destinatario;
+    @Column(nullable = false, length = 200)
+    private String titulo;
 
-    @Column(name = "mensagem", length = 2000, nullable = false)
+    @Column(nullable = false, length = 1000)
     private String mensagem;
 
-    @CreationTimestamp
-    @Column(name = "data_criacao", nullable = false, updatable = false)
-    private LocalDateTime dataCriacao;
+    @Column(name = "data_criacao", nullable = false)
+    private LocalDateTime dataCriacao = LocalDateTime.now();
 
     @Column(name = "lida", nullable = false)
     private boolean lida = false;
 
-    public Notificacao() {}
-    public Notificacao(Utilizador destinatario, String mensagem) {
-        this.destinatario = destinatario;
-        this.mensagem = mensagem;
-    }
+    // Note: Utilizador tem id do tipo String no teu projecto atual
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "utilizador_id", nullable = false)
+    private Utilizador utilizador;
 
     public UUID getId() { return id; }
-    public Utilizador getDestinatario() { return destinatario; }
-    public void setDestinatario(Utilizador destinatario) { this.destinatario = destinatario; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
     public String getMensagem() { return mensagem; }
     public void setMensagem(String mensagem) { this.mensagem = mensagem; }
     public LocalDateTime getDataCriacao() { return dataCriacao; }
     public boolean isLida() { return lida; }
     public void setLida(boolean lida) { this.lida = lida; }
-
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Notificacao)) return false;
-        Notificacao that = (Notificacao) o;
-        return Objects.equals(id, that.id);
-    }
-    @Override public int hashCode() { return Objects.hash(id); }
+    public Utilizador getUtilizador() { return utilizador; }
+    public void setUtilizador(Utilizador utilizador) { this.utilizador = utilizador; }
 }

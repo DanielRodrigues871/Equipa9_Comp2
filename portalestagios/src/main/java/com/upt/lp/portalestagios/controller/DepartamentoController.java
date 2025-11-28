@@ -5,6 +5,7 @@ import com.upt.lp.portalestagios.service.DepartamentoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -29,8 +30,10 @@ public class DepartamentoController {
     }
 
     @PostMapping
-    public Departamento criar(@RequestBody Departamento d) {
-        return service.criar(d);
+    public ResponseEntity<Departamento> criar(@RequestBody Departamento d) {
+        Departamento criado = service.criar(d);
+        return ResponseEntity.created(URI.create("/api/departamentos/" + criado.getId()))
+                .body(criado);
     }
 
     @PutMapping("/{id}")
