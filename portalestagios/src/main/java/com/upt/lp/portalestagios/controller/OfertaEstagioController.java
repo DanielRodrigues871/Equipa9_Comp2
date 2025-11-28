@@ -49,7 +49,7 @@ public class OfertaEstagioController {
         return ResponseEntity.noContent().build();
     }
 
-    // AÇÕES DE NEGÓCIO
+    // AÇÕES DE NEGÓCIO.
 
     @PutMapping("/{id}/aprovar")
     public ResponseEntity<OfertaEstagio> aprovar(@PathVariable UUID id) {
