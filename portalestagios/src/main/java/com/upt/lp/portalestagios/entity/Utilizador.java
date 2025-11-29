@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import java.util.UUID;
 
 @MappedSuperclass
 public abstract class Utilizador {
@@ -11,7 +12,7 @@ public abstract class Utilizador {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false, length = 36)
-    protected String id;
+    protected UUID id;
 
     @Column(name = "nome", nullable = false, length = 100)
     protected String nome;

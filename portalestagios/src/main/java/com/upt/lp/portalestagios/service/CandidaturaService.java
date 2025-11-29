@@ -1,88 +1,98 @@
 package com.upt.lp.portalestagios.service;
 
+import com.upt.lp.portalestagios.dto.candidatura.CandidaturaRequestDTO;
+import com.upt.lp.portalestagios.dto.candidatura.CandidaturaResponseDTO;
 import com.upt.lp.portalestagios.entity.Candidatura;
+import com.upt.lp.portalestagios.entity.Estudante;
+import com.upt.lp.portalestagios.entity.OfertaEstagio;
+import com.upt.lp.portalestagios.mapper.CandidaturaMapper;
 import com.upt.lp.portalestagios.repository.CandidaturaRepository;
+import com.upt.lp.portalestagios.repository.EstudanteRepository;
+import com.upt.lp.portalestagios.repository.OfertaEstagioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class CandidaturaService {
 
     private final CandidaturaRepository repo;
+    private final EstudanteRepository estudanteRepo;
+    private final OfertaEstagioRepository ofertaRepo;
 
-    public CandidaturaService(CandidaturaRepository repo) {
+    public CandidaturaService(CandidaturaRepository repo,
+                              EstudanteRepository estudanteRepo,
+                              OfertaEstagioRepository ofertaRepo) {
         this.repo = repo;
+        this.estudanteRepo = estudanteRepo;
+        this.ofertaRepo = ofertaRepo;
     }
 
-    // -------------------------------------
-    // CRUD
-    // -------------------------------------
-
-    public List<Candidatura> listar() {
-        return repo.findAll();
+    // listar todas em DTO
+    public List<CandidaturaResponseDTO> listar() {
+        return repo.findAll().stream()
+                .map(CandidaturaMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Candidatura buscar(String id) {
-        UUID uuid = UUID.fromString(id);
-        return repo.findById(uuid)
+    // buscar por id (UUID)
+    public CandidaturaResponseDTO buscar(UUID id) {
+        Candidatura c = repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Candidatura não encontrada"));
+        return CandidaturaMapper.toResponseDTO(c);
     }
 
-    public Candidatura criar(Candidatura candidatura) {
-        return repo.save(candidatura);
+    // criar: recebe request DTO, resolve estudante/oferta, associa e guarda
+    public CandidaturaResponseDTO criar(CandidaturaRequestDTO dto) {
+        Estudante est = estudanteRepo.findById(dto.getEstudanteId())
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
+        OfertaEstagio oferta = ofertaRepo.findById(dto.getOfertaId())
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        Candidatura c = CandidaturaMapper.fromRequestDTO(dto);
+        c.setEstudante(est);
+        c.setOferta(oferta);
+
+        // status e dataSubmissao são configurados no construtor de Candidatura
+        Candidatura salvo = repo.save(c);
+        return CandidaturaMapper.toResponseDTO(salvo);
     }
 
-    public Candidatura atualizar(String id, Candidatura dados) {
-        UUID uuid = UUID.fromString(id);
-        Candidatura c = repo.findById(uuid).orElseThrow();
+    // atualizar (parcial) — usa UUID
+    public CandidaturaResponseDTO atualizar(UUID id, CandidaturaRequestDTO dto) {
+        Candidatura c = repo.findById(id).orElseThrow(() -> new RuntimeException("Candidatura não encontrada"));
 
-        // Campos que realmente existem ― só estes!
-        c.setCartaMotivacao(dados.getCartaMotivacao());
-        c.setStatus(dados.getStatus());
-        c.setEstudante(dados.getEstudante());
-        c.setOferta(dados.getOferta());
-        c.setCoordenadorResponsavel(dados.getCoordenadorResponsavel());
+        if (dto.getCartaMotivacao() != null) c.setCartaMotivacao(dto.getCartaMotivacao());
+        if (dto.getObservacoes() != null) c.setObservacoes(dto.getObservacoes());
 
-        // atualizar observações (se existirem)
-        if (dados.getObservacoes() != null) {
-            c.rejeitar(dados.getObservacoes()); // usa o método próprio
-        }
+        // se quiseres permitir alterar estudante/oferta via update, faz lookup e set aqui
 
-        return repo.save(c);
+        Candidatura atualizado = repo.save(c);
+        return CandidaturaMapper.toResponseDTO(atualizado);
     }
 
-    public void apagar(String id) {
-        UUID uuid = UUID.fromString(id);
-        repo.deleteById(uuid);
+    public void apagar(UUID id) {
+        repo.deleteById(id);
     }
 
-    // -------------------------------------
-    // AÇÕES ESPECÍFICAS
-    // -------------------------------------
-
-    public Candidatura colocarEmAnalise(String id) {
-        UUID uuid = UUID.fromString(id);
-        Candidatura c = repo.findById(uuid).orElseThrow();
-
+    // Ações de negócio
+    public CandidaturaResponseDTO colocarEmAnalise(UUID id) {
+        Candidatura c = repo.findById(id).orElseThrow();
         c.colocarEmAnalise();
-        return repo.save(c);
+        return CandidaturaMapper.toResponseDTO(repo.save(c));
     }
 
-    public Candidatura aprovar(String id) {
-        UUID uuid = UUID.fromString(id);
-        Candidatura c = repo.findById(uuid).orElseThrow();
-
+    public CandidaturaResponseDTO aprovar(UUID id) {
+        Candidatura c = repo.findById(id).orElseThrow();
         c.aprovar();
-        return repo.save(c);
+        return CandidaturaMapper.toResponseDTO(repo.save(c));
     }
 
-    public Candidatura rejeitar(String id, String motivo) {
-        UUID uuid = UUID.fromString(id);
-        Candidatura c = repo.findById(uuid).orElseThrow();
-
+    public CandidaturaResponseDTO rejeitar(UUID id, String motivo) {
+        Candidatura c = repo.findById(id).orElseThrow();
         c.rejeitar(motivo);
-        return repo.save(c);
+        return CandidaturaMapper.toResponseDTO(repo.save(c));
     }
 }

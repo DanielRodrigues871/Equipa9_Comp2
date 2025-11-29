@@ -1,12 +1,14 @@
 package com.upt.lp.portalestagios.controller;
 
-import com.upt.lp.portalestagios.entity.Candidatura;
+import com.upt.lp.portalestagios.dto.candidatura.CandidaturaRequestDTO;
+import com.upt.lp.portalestagios.dto.candidatura.CandidaturaResponseDTO;
 import com.upt.lp.portalestagios.service.CandidaturaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/candidaturas")
@@ -19,61 +21,49 @@ public class CandidaturaController {
         this.service = service;
     }
 
-    // ---------------------- LISTAR ----------------------
     @GetMapping
-    public ResponseEntity<List<Candidatura>> listar() {
+    public ResponseEntity<List<CandidaturaResponseDTO>> listar() {
         return ResponseEntity.ok(service.listar());
     }
 
-    // ---------------------- BUSCAR POR ID ----------------------
     @GetMapping("/{id}")
-    public ResponseEntity<Candidatura> buscar(@PathVariable String id) {
+    public ResponseEntity<CandidaturaResponseDTO> buscar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.buscar(id));
     }
 
-    // ---------------------- CRIAR ----------------------
     @PostMapping
-    public ResponseEntity<Candidatura> criar(@RequestBody Candidatura candidatura) {
-        Candidatura criada = service.criar(candidatura);
+    public ResponseEntity<CandidaturaResponseDTO> criar(@RequestBody CandidaturaRequestDTO dto) {
+        CandidaturaResponseDTO criada = service.criar(dto);
         return ResponseEntity.created(URI.create("/api/candidaturas/" + criada.getId()))
                 .body(criada);
     }
 
-    // ---------------------- ATUALIZAR ----------------------
     @PutMapping("/{id}")
-    public ResponseEntity<Candidatura> atualizar(
-            @PathVariable String id,
-            @RequestBody Candidatura candidatura
-    ) {
-        return ResponseEntity.ok(service.atualizar(id, candidatura));
+    public ResponseEntity<CandidaturaResponseDTO> atualizar(@PathVariable UUID id,
+                                                            @RequestBody CandidaturaRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizar(id, dto));
     }
 
-    // ---------------------- APAGAR ----------------------
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagar(@PathVariable String id) {
+    public ResponseEntity<Void> apagar(@PathVariable UUID id) {
         service.apagar(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ======================================================
-    //              AÇÕES DE NEGÓCIO DA CANDIDATURA
-    // ======================================================
-
+    // ações de negócio
     @PutMapping("/{id}/aprovar")
-    public ResponseEntity<Candidatura> aprovar(@PathVariable String id) {
+    public ResponseEntity<CandidaturaResponseDTO> aprovar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.aprovar(id));
     }
 
     @PutMapping("/{id}/rejeitar")
-    public ResponseEntity<Candidatura> rejeitar(
-            @PathVariable String id,
-            @RequestParam(required = false) String motivo
-    ) {
+    public ResponseEntity<CandidaturaResponseDTO> rejeitar(@PathVariable UUID id,
+                                                           @RequestParam(required = false) String motivo) {
         return ResponseEntity.ok(service.rejeitar(id, motivo));
     }
 
     @PutMapping("/{id}/analise")
-    public ResponseEntity<Candidatura> colocarEmAnalise(@PathVariable String id) {
+    public ResponseEntity<CandidaturaResponseDTO> colocarEmAnalise(@PathVariable UUID id) {
         return ResponseEntity.ok(service.colocarEmAnalise(id));
     }
 }

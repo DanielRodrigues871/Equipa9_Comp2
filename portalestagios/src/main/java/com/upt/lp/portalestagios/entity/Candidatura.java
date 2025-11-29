@@ -58,26 +58,35 @@ public class Candidatura {
     public UUID getId() { return id; }
     public Estudante getEstudante() { return estudante; }
     public void setEstudante(Estudante estudante) { this.estudante = estudante; }
+
     public Coordenador getCoordenadorResponsavel() { return coordenadorResponsavel; }
     public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) { this.coordenadorResponsavel = coordenadorResponsavel; }
+
     public OfertaEstagio getOferta() { return oferta; }
     public void setOferta(OfertaEstagio oferta) { this.oferta = oferta; }
+
     public StatusCandidatura getStatus() { return status; }
     public void setStatus(StatusCandidatura status) { this.status = status; }
+
     public String getCartaMotivacao() { return cartaMotivacao; }
     public void setCartaMotivacao(String cartaMotivacao) { this.cartaMotivacao = cartaMotivacao; }
+
     public LocalDateTime getDataSubmissao() { return dataSubmissao; }
     public LocalDateTime getDataAnalise() { return dataAnalise; }
+
     public String getObservacoes() { return observacoes; }
+    public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
 
     public void colocarEmAnalise() {
         this.status = StatusCandidatura.EM_ANALISE;
         this.dataAnalise = LocalDateTime.now();
     }
+
     public void aprovar() {
         this.status = StatusCandidatura.APROVADA;
         this.dataAnalise = LocalDateTime.now();
     }
+
     public void rejeitar(String obs) {
         this.status = StatusCandidatura.REJEITADA;
         this.dataAnalise = LocalDateTime.now();
@@ -90,5 +99,6 @@ public class Candidatura {
         Candidatura that = (Candidatura) o;
         return Objects.equals(id, that.id);
     }
+
     @Override public int hashCode() { return Objects.hash(id); }
 }
