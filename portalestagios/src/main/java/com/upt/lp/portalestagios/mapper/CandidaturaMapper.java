@@ -14,7 +14,8 @@ public class CandidaturaMapper {
         CandidaturaResponseDTO dto = new CandidaturaResponseDTO();
         dto.setId(c.getId());
         if (c.getEstudante() != null) {
-        	dto.setEstudanteId(UUID.fromString(c.getEstudante().getId()));
+        	dto.setEstudanteId(c.getEstudante().getId());
+
 
             dto.setEstudanteNome(c.getEstudante().getNome());
         }
