@@ -1,10 +1,12 @@
 package com.upt.lp.portalestagios.controller;
 
-import com.upt.lp.portalestagios.entity.Curso;
+import com.upt.lp.portalestagios.dto.curso.CursoRequestDTO;
+import com.upt.lp.portalestagios.dto.curso.CursoResponseDTO;
 import com.upt.lp.portalestagios.service.CursoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -19,24 +21,26 @@ public class CursoController {
     }
 
     @GetMapping
-    public List<Curso> listar() {
+    public List<CursoResponseDTO> listar() {
         return service.listar();
     }
 
     @GetMapping("/{id}")
-    public Curso buscar(@PathVariable String id) {
+    public CursoResponseDTO buscar(@PathVariable String id) {
         return service.buscar(id);
     }
 
-    @PostMapping("/{departamentoId}")
-    public Curso criar(@PathVariable String departamentoId,
-                       @RequestBody Curso c) {
-        return service.criar(departamentoId, c);
+    @PostMapping
+    public ResponseEntity<CursoResponseDTO> criar(@RequestBody CursoRequestDTO dto) {
+        CursoResponseDTO criado = service.criar(dto);
+        return ResponseEntity.created(URI.create("/api/cursos/" + criado.getId()))
+                .body(criado);
     }
 
     @PutMapping("/{id}")
-    public Curso atualizar(@PathVariable String id, @RequestBody Curso c) {
-        return service.atualizar(id, c);
+    public CursoResponseDTO atualizar(@PathVariable String id,
+                                      @RequestBody CursoRequestDTO dto) {
+        return service.atualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")

@@ -1,6 +1,9 @@
 package com.upt.lp.portalestagios.service;
 
+import com.upt.lp.portalestagios.dto.departamento.DepartamentoRequestDTO;
+import com.upt.lp.portalestagios.dto.departamento.DepartamentoResponseDTO;
 import com.upt.lp.portalestagios.entity.Departamento;
+import com.upt.lp.portalestagios.mapper.DepartamentoMapper;
 import com.upt.lp.portalestagios.repository.DepartamentoRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,28 +19,37 @@ public class DepartamentoService {
         this.repo = repo;
     }
 
-    public List<Departamento> listar() {
-        return repo.findAll();
+    public List<DepartamentoResponseDTO> listar() {
+        return repo.findAll()
+                .stream()
+                .map(DepartamentoMapper::toDTO)
+                .toList();
     }
 
-    public Departamento buscar(String id) {
+    public DepartamentoResponseDTO buscar(String id) {
         UUID uuid = UUID.fromString(id);
-        return repo.findById(uuid)
+        Departamento d = repo.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
+
+        return DepartamentoMapper.toDTO(d);
     }
 
-    public Departamento criar(Departamento d) {
-        return repo.save(d);
+    public DepartamentoResponseDTO criar(DepartamentoRequestDTO dto) {
+        Departamento novo = DepartamentoMapper.toEntity(dto);
+        Departamento salvo = repo.save(novo);
+        return DepartamentoMapper.toDTO(salvo);
     }
 
-    public Departamento atualizar(String id, Departamento dados) {
-        Departamento d = buscar(id);
+    public DepartamentoResponseDTO atualizar(String id, DepartamentoRequestDTO dto) {
+        UUID uuid = UUID.fromString(id);
+        Departamento existente = repo.findById(uuid)
+                .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
 
-        d.setNome(dados.getNome());
-        d.setCodigo(dados.getCodigo());
-        d.setDescricao(dados.getDescricao());
+        existente.setNome(dto.getNome());
+        existente.setCodigo(dto.getCodigo());
+        existente.setDescricao(dto.getDescricao());
 
-        return repo.save(d);
+        return DepartamentoMapper.toDTO(repo.save(existente));
     }
 
     public void apagar(String id) {

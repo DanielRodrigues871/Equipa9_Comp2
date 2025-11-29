@@ -1,6 +1,7 @@
 package com.upt.lp.portalestagios.controller;
 
-import com.upt.lp.portalestagios.entity.Departamento;
+import com.upt.lp.portalestagios.dto.departamento.DepartamentoRequestDTO;
+import com.upt.lp.portalestagios.dto.departamento.DepartamentoResponseDTO;
 import com.upt.lp.portalestagios.service.DepartamentoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,25 +21,26 @@ public class DepartamentoController {
     }
 
     @GetMapping
-    public List<Departamento> listar() {
+    public List<DepartamentoResponseDTO> listar() {
         return service.listar();
     }
 
     @GetMapping("/{id}")
-    public Departamento buscar(@PathVariable String id) {
+    public DepartamentoResponseDTO buscar(@PathVariable String id) {
         return service.buscar(id);
     }
 
     @PostMapping
-    public ResponseEntity<Departamento> criar(@RequestBody Departamento d) {
-        Departamento criado = service.criar(d);
+    public ResponseEntity<DepartamentoResponseDTO> criar(@RequestBody DepartamentoRequestDTO dto) {
+        DepartamentoResponseDTO criado = service.criar(dto);
         return ResponseEntity.created(URI.create("/api/departamentos/" + criado.getId()))
                 .body(criado);
     }
 
     @PutMapping("/{id}")
-    public Departamento atualizar(@PathVariable String id, @RequestBody Departamento d) {
-        return service.atualizar(id, d);
+    public DepartamentoResponseDTO atualizar(@PathVariable String id,
+                                             @RequestBody DepartamentoRequestDTO dto) {
+        return service.atualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")

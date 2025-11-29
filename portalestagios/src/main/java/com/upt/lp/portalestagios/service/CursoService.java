@@ -1,7 +1,10 @@
 package com.upt.lp.portalestagios.service;
 
+import com.upt.lp.portalestagios.dto.curso.CursoRequestDTO;
+import com.upt.lp.portalestagios.dto.curso.CursoResponseDTO;
 import com.upt.lp.portalestagios.entity.Curso;
 import com.upt.lp.portalestagios.entity.Departamento;
+import com.upt.lp.portalestagios.mapper.CursoMapper;
 import com.upt.lp.portalestagios.repository.CursoRepository;
 import com.upt.lp.portalestagios.repository.DepartamentoRepository;
 import org.springframework.stereotype.Service;
@@ -20,39 +23,50 @@ public class CursoService {
         this.deptRepo = deptRepo;
     }
 
-    public List<Curso> listar() {
-        return cursoRepo.findAll();
+    public List<CursoResponseDTO> listar() {
+        return cursoRepo.findAll()
+                .stream()
+                .map(CursoMapper::toDTO)
+                .toList();
     }
 
-    public Curso buscar(String id) {
+    public CursoResponseDTO buscar(String id) {
         UUID uuid = UUID.fromString(id);
-        return cursoRepo.findById(uuid)
+        Curso c = cursoRepo.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
+        return CursoMapper.toDTO(c);
     }
 
-    public Curso criar(String departamentoId, Curso c) {
-        UUID deptUuid = UUID.fromString(departamentoId);
+    public CursoResponseDTO criar(CursoRequestDTO dto) {
 
-        Departamento dept = deptRepo.findById(deptUuid)
+        UUID deptId = UUID.fromString(dto.getDepartamentoId());
+        Departamento dept = deptRepo.findById(deptId)
                 .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
 
-        c.setDepartamento(dept);
-        return cursoRepo.save(c);
+        Curso novo = CursoMapper.toEntity(dto, dept);
+        Curso salvo = cursoRepo.save(novo);
+
+        return CursoMapper.toDTO(salvo);
     }
 
-    public Curso atualizar(String id, Curso dados) {
+    public CursoResponseDTO atualizar(String id, CursoRequestDTO dto) {
         UUID uuid = UUID.fromString(id);
-
         Curso c = cursoRepo.findById(uuid)
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-        c.setNome(dados.getNome());
-        c.setCodigo(dados.getCodigo());
-        c.setDuracaoAnos(dados.getDuracaoAnos());
-        c.setGrau(dados.getGrau());
-        c.setCoordenador(dados.getCoordenador());
+        c.setNome(dto.getNome());
+        c.setCodigo(dto.getCodigo());
+        c.setDuracaoAnos(dto.getDuracaoAnos());
+        c.setGrau(dto.getGrau());
 
-        return cursoRepo.save(c);
+        if (dto.getDepartamentoId() != null) {
+            UUID deptId = UUID.fromString(dto.getDepartamentoId());
+            Departamento d = deptRepo.findById(deptId)
+                    .orElseThrow(() -> new RuntimeException("Departamento não encontrado"));
+            c.setDepartamento(d);
+        }
+
+        return CursoMapper.toDTO(cursoRepo.save(c));
     }
 
     public void apagar(String id) {
