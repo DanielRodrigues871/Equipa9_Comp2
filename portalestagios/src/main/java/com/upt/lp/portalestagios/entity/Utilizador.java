@@ -6,7 +6,9 @@ import java.util.Objects;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.UUID;
 
-@MappedSuperclass
+@Entity
+@Table(name = "utilizador")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Utilizador {
 
     @Id
