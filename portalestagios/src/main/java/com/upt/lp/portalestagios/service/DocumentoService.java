@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class DocumentoService {
@@ -18,7 +19,7 @@ public class DocumentoService {
         return documentoRepository.findAll();
     }
 
-    public Optional<Documento> findById(String id) {
+    public Optional<Documento> findById(UUID id) {
         return documentoRepository.findById(id);
     }
 
@@ -26,7 +27,8 @@ public class DocumentoService {
         return documentoRepository.save(documento);
     }
 
-    public void delete(String id) {
+    public void delete(UUID id) {
         documentoRepository.deleteById(id);
     }
 }
+

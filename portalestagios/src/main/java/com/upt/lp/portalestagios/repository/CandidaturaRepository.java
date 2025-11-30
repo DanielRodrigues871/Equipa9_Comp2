@@ -11,10 +11,12 @@ import java.util.UUID;
 
 public interface CandidaturaRepository extends JpaRepository<Candidatura, UUID> {
 
-    List<Candidatura> findByEstudante(Estudante estudante);
+	List<Candidatura> findByEstudanteId(UUID estudanteId);
+
 
     @Query("SELECT c FROM Candidatura c WHERE c.coordenadorResponsavel.id = :coordId")
-    List<Candidatura> findByCoordenador(UUID coordId);
+    List<Candidatura> findByCoordenadorResponsavelId(UUID coordId);
+
 
     @Query("SELECT c FROM Candidatura c WHERE c.oferta.id = :ofertaId")
     List<Candidatura> findByOferta(UUID ofertaId);

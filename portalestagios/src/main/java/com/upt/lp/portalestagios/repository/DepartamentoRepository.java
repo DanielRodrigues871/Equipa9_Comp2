@@ -11,5 +11,7 @@ public interface DepartamentoRepository extends JpaRepository<Departamento, UUID
 
     @Query("SELECT d FROM Departamento d WHERE d.codigo = :codigo")
     Optional<Departamento> findByCodigo(String codigo);
+    
+    boolean existsByNome(String nome);
 }
 

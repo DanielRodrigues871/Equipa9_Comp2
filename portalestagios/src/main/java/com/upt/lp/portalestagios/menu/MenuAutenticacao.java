@@ -46,14 +46,15 @@ public class MenuAutenticacao {
         System.out.print("Password: ");
         String password = sc.nextLine();
 
-        Utilizador u = authService.login(email, password);
+        LoginRequestDTO dto = new LoginRequestDTO(email, password);
+
+        Utilizador u = authService.login(dto);
 
         if (u != null) {
-        	SessaoUtil.setUtilizadorLogado(u);
+            SessaoUtil.setUtilizadorLogado(u);
             System.out.println("\n✔ Login efetuado com sucesso! Bem-vindo, " + u.getNome());
         } else {
             System.out.println("\n✘ Credenciais inválidas.");
         }
     }
 }
-

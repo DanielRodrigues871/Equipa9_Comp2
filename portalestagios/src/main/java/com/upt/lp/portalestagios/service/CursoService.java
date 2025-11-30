@@ -73,4 +73,21 @@ public class CursoService {
         UUID uuid = UUID.fromString(id);
         cursoRepo.deleteById(uuid);
     }
+    public CursoResponseDTO criar(
+            String nome,
+            String codigo,
+            int duracao,
+            String grau,
+            UUID departamentoId
+    ) {
+        CursoRequestDTO dto = new CursoRequestDTO();
+        dto.setNome(nome);
+        dto.setCodigo(codigo);
+        dto.setDuracaoAnos(duracao);
+        dto.setGrau(grau);
+        dto.setDepartamentoId(departamentoId.toString());
+
+        return criar(dto);
+    }
+
 }

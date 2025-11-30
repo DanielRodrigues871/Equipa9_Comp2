@@ -119,5 +119,43 @@ public class OfertaEstagioService {
                 .map(OfertaEstagioMapper::toDTO)
                 .toList();
     }
+    
+    public List<OfertaEstagioResponseDTO> listarTodas() {
+        return listar();
+    }
+
+    public OfertaEstagioResponseDTO criar(
+            String titulo,
+            String descricao,
+            UUID empresaId,
+            UUID areaId,
+            UUID coordId
+    ) {
+        OfertaEstagioRequestDTO dto = new OfertaEstagioRequestDTO();
+        dto.setTitulo(titulo);
+        dto.setDescricao(descricao);
+        dto.setEmpresaId(empresaId);
+        dto.setAreaId(areaId);
+        dto.setCoordenadorId(coordId);
+
+        return criar(dto);
+    }
+    public OfertaEstagioResponseDTO editar(UUID id) {
+        OfertaEstagio o = ofertaRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Oferta não encontrada"));
+
+        return OfertaEstagioMapper.toDTO(o);
+    }
+    public void eliminar(UUID id) {
+        ofertaRepo.deleteById(id);
+    }
+
+    public List<OfertaEstagioResponseDTO> listarDisponiveis() {
+        return ofertaRepo.findAll().stream()
+                .filter(o -> o.getStatus() == StatusOferta.APROVADO)
+                .map(OfertaEstagioMapper::toDTO)
+                .toList();
+    }
+
 
 }

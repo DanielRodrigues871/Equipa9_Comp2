@@ -13,10 +13,14 @@ public class AreaEstagioMapper {
         return a;
     }
 
-    public static AreaEstagioResponseDTO toDTO(AreaEstagio a) {
-        return new AreaEstagioResponseDTO(
-                a.getId(),
-                a.getNome(),
-                a.getDescricao());
-    }
+   
+        public static AreaEstagioResponseDTO toDTO(AreaEstagio a) {
+            return new AreaEstagioResponseDTO(
+                    a.getId(),
+                    a.getNome(),
+                    a.getDescricao()
+            );
+        }
+    
+
 }

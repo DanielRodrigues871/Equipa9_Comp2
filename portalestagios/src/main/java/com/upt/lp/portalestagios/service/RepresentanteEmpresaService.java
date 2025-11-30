@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+import java.util.UUID;
 @Service
 public class RepresentanteEmpresaService {
 
@@ -18,7 +18,7 @@ public class RepresentanteEmpresaService {
         return representanteRepository.findAll();
     }
 
-    public Optional<RepresentanteEmpresa> findById(String id) {
+    public Optional<RepresentanteEmpresa> findById(UUID id) {
         return representanteRepository.findById(id);
     }
 
@@ -26,7 +26,9 @@ public class RepresentanteEmpresaService {
         return representanteRepository.save(rep);
     }
 
-    public void delete(String id) {
+    public void delete(UUID id) {
         representanteRepository.deleteById(id);
     }
 }
+
+

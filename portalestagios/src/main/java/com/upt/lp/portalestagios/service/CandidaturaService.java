@@ -95,4 +95,35 @@ public class CandidaturaService {
         c.rejeitar(motivo);
         return CandidaturaMapper.toResponseDTO(repo.save(c));
     }
+    public List<CandidaturaResponseDTO> listarPorCoordenador(UUID coordId) {
+        return repo.findByCoordenadorResponsavelId(coordId)
+                .stream()
+                .map(CandidaturaMapper::toResponseDTO)
+                .toList();
+    }
+
+    public void aceitar(UUID id) {
+        aprovar(id);
+    }
+    public void rejeitar(UUID id, UUID coordId) {
+        rejeitar(id, "Rejeitado pelo coordenador " + coordId);
+    }
+
+    public List<CandidaturaResponseDTO> listarPorEstudante(UUID estudanteId) {
+        return repo.findByEstudanteId(estudanteId)
+                .stream()
+                .map(CandidaturaMapper::toResponseDTO)
+                .toList();
+    }
+
+    public CandidaturaResponseDTO criar(UUID estudanteId, UUID ofertaId, String cartaMotivacao) {
+
+        CandidaturaRequestDTO dto = new CandidaturaRequestDTO();
+        dto.setEstudanteId(estudanteId);
+        dto.setOfertaId(ofertaId);
+        dto.setCartaMotivacao(cartaMotivacao);
+
+        return criar(dto); // reutiliza o método principal
+    }
+
 }
