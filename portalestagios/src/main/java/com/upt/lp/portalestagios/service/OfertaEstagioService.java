@@ -112,4 +112,12 @@ public class OfertaEstagioService {
     public void apagar(String id) {
         ofertaRepo.deleteById(UUID.fromString(id));
     }
+    
+    public List<OfertaEstagioResponseDTO> listarPorEmpresa(UUID empresaId) {
+        return ofertaRepo.findByEmpresaId(empresaId)
+                .stream()
+                .map(OfertaEstagioMapper::toDTO)
+                .toList();
+    }
+
 }

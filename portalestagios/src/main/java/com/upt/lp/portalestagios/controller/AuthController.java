@@ -1,49 +1,36 @@
 package com.upt.lp.portalestagios.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.upt.lp.portalestagios.entity.Utilizador;
+import com.upt.lp.portalestagios.service.UtilizadorService;
+import com.upt.lp.portalestagios.util.SessaoUtil;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UtilizadorService userService;
+
+    public AuthController(UtilizadorService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/login")
     public String login(@RequestParam String email,
-                        @RequestParam String password,
-                        HttpServletRequest request) {
+                        @RequestParam String password) {
 
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-        );
+        Utilizador u = userService.autenticar(email, password);
 
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        if (u == null)
+            return "Credenciais inválidas";
 
-        // cria sessão
-        HttpSession session = request.getSession(true);
-
-        return "Login OK. Sessão ID: " + session.getId();
+        SessaoUtil.setUtilizadorLogado(u);
+        return "Login efetuado com sucesso!";
     }
 
     @PostMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        request.getSession().invalidate();
-        return "Logout OK";
-    }
-
-    @GetMapping("/me")
-    public Object me(Authentication auth) {
-        if (auth == null) {
-            return "Não está autenticado.";
-        }
-        return auth.getPrincipal();
+    public String logout() {
+        SessaoUtil.setUtilizadorLogado(null);
+        return "Sessão terminada.";
     }
 }
-

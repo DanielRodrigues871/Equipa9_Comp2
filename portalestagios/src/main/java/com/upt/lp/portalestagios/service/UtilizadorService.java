@@ -42,5 +42,11 @@ public class UtilizadorService {
         u.setPassword(encoder.encode(novaPassword));
         utilizadorRepository.save(u);
     }
+    public Utilizador autenticar(String email, String senha) {
+        return utilizadorRepository.findByEmail(email)
+                .filter(u -> encoder.matches(senha, u.getPassword()))
+                .orElse(null);
+    }
+
 }
 
