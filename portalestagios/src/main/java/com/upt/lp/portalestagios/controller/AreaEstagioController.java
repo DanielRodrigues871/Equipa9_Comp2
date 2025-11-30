@@ -1,49 +1,52 @@
 package com.upt.lp.portalestagios.controller;
 
-import com.upt.lp.portalestagios.entity.AreaEstagio;
+import com.upt.lp.portalestagios.dto.area.AreaEstagioRequestDTO;
+import com.upt.lp.portalestagios.dto.area.AreaEstagioResponseDTO;
 import com.upt.lp.portalestagios.service.AreaEstagioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/areas")
 @CrossOrigin("*")
 public class AreaEstagioController {
 
-    private final AreaEstagioService areaService;
+    private final AreaEstagioService service;
 
-    public AreaEstagioController(AreaEstagioService areaService) {
-        this.areaService = areaService;
+    public AreaEstagioController(AreaEstagioService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public ResponseEntity<List<AreaEstagio>> listarTodos() {
-        return ResponseEntity.ok(areaService.listarTodos());
+    public List<AreaEstagioResponseDTO> listar() {
+        return service.listar();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AreaEstagio> buscarPorId(@PathVariable String id) {
-        return ResponseEntity.ok(areaService.buscarPorId(id));
+    public AreaEstagioResponseDTO buscar(@PathVariable UUID id) {
+        return service.buscar(id);
     }
 
     @PostMapping
-    public ResponseEntity<AreaEstagio> criar(@RequestBody AreaEstagio area) {
-        return ResponseEntity.ok(areaService.criar(area));
+    public ResponseEntity<AreaEstagioResponseDTO> criar(@RequestBody AreaEstagioRequestDTO dto) {
+        AreaEstagioResponseDTO criado = service.criar(dto);
+        return ResponseEntity.created(URI.create("/api/areas/" + criado.getId()))
+                .body(criado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AreaEstagio> atualizar(
-            @PathVariable String id,
-            @RequestBody AreaEstagio novaArea
-    ) {
-        return ResponseEntity.ok(areaService.atualizar(id, novaArea));
+    public AreaEstagioResponseDTO atualizar(@PathVariable UUID id,
+                                            @RequestBody AreaEstagioRequestDTO dto) {
+        return service.atualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> apagar(@PathVariable String id) {
-        areaService.apagar(id);
+    public ResponseEntity<Void> apagar(@PathVariable UUID id) {
+        service.apagar(id);
         return ResponseEntity.noContent().build();
     }
 }
