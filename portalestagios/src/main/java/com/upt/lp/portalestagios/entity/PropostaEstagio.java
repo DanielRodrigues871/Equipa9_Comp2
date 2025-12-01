@@ -4,6 +4,7 @@ import com.upt.lp.portalestagios.enums.StatusProposta;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "proposta_estagio")
@@ -11,8 +12,8 @@ public class PropostaEstagio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "area_id")
@@ -62,7 +63,15 @@ public class PropostaEstagio {
         this.status = StatusProposta.REJEITADA;
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
+
+    public AreaEstagio getArea() { return area; }
+    public Empresa getEmpresa() { return empresa; }
+    public Coordenador getCoordenadorResponsavel() { return coordenadorResponsavel; }
+    public String getTitulo() { return titulo; }
+    public String getDescricao() { return descricao; }
+    
+    public LocalDateTime getDataRegisto() { return dataRegisto; }
 
     @Override
     public boolean equals(Object o) {
@@ -71,6 +80,14 @@ public class PropostaEstagio {
         PropostaEstagio that = (PropostaEstagio) o;
         return Objects.equals(id, that.id);
     }
+    public StatusProposta getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusProposta status) {
+        this.status = status;
+    }
+
 
     @Override
     public int hashCode() { return Objects.hash(id); }

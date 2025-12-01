@@ -1,9 +1,9 @@
 package com.upt.lp.portalestagios.repository;
 
 import com.upt.lp.portalestagios.entity.PropostaEstagio;
+import com.upt.lp.portalestagios.enums.StatusProposta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 
 import java.util.UUID;
 import java.util.List;
@@ -13,5 +13,5 @@ public interface PropostaEstagioRepository extends JpaRepository<PropostaEstagio
 
     List<PropostaEstagio> findByEmpresaId(UUID empresaId);
 
-    List<PropostaEstagio> findByStatus(String status);
+    List<PropostaEstagio> findByStatus(StatusProposta status);
 }

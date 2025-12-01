@@ -13,13 +13,14 @@ public interface EstagioRepository extends JpaRepository<Estagio, UUID> {
 
     List<Estagio> findByEstudanteId(UUID estudanteId);
     
-    // Buscar estágios por empresa → via proposta → oferta → empresa
     @Query("""
-           SELECT e FROM Estagio e 
-           WHERE e.proposta.oferta.empresa.id = :empresaId
-           """)
+    	    SELECT e FROM Estagio e
+    	    JOIN e.proposta p
+    	    JOIN p.empresa em
+    	    WHERE em.id = :empresaId
+    	""")
+    	List<Estagio> findByEmpresaId(UUID empresaId);
 
-    List<Estagio> findByEmpresaId(UUID empresaId);
 }
 
 
