@@ -1,17 +1,18 @@
 package com.upt.lp.componente2.dto;
 
-public class AreaEstagioDTO {
+public class DepartamentoDTO {
     private String id;
     private String nome;
+    private String codigo;
     private String descricao;
 
-    public AreaEstagioDTO() {
+    public DepartamentoDTO() {
     }
 
-    public AreaEstagioDTO(String id, String nome, String descricao) {
+    public DepartamentoDTO(String id, String nome, String codigo) {
         this.id = id;
         this.nome = nome;
-        this.descricao = descricao;
+        this.codigo = codigo;
     }
 
     // Getters e Setters
@@ -20,6 +21,9 @@ public class AreaEstagioDTO {
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
+
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
 
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
