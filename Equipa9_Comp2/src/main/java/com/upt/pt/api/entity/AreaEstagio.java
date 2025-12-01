@@ -9,7 +9,7 @@ import java.util.UUID;
 public class AreaEstagio {
 
     @Id
-    @Column(name = "id", length=36)
+    @Column(name = "id", length = 36)
     private String id;
 
     @Column(name = "nome", nullable = false)
@@ -28,7 +28,6 @@ public class AreaEstagio {
         this.descricao = descricao;
     }
 
-    // Getters e setters
     public String getId() {
         return id;
     }
@@ -44,7 +43,7 @@ public class AreaEstagio {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    
+
     public String getDescricao() {
         return descricao;
     }

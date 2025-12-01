@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Classe que representa um curso
- */
 @Entity
 @Table(name = "curso")
 public class Curso {
@@ -20,7 +17,7 @@ public class Curso {
 
     @Column(name = "codigo", nullable = false, unique = true)
     private String codigo;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coordenador_id")
     private Coordenador coordenador;
@@ -41,25 +38,12 @@ public class Curso {
 
     public Curso(String nome, String codigo, int duracaoAnos, String grau) {
         this();
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do curso é obrigatório."); 
-        }
-        if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do curso é obrigatório."); 
-        }
-        if (duracaoAnos <= 0) {
-            throw new IllegalArgumentException("A duração do curso deve ser maior que zero.");
-        }
-        if (grau == null || grau.isBlank()) {
-            throw new IllegalArgumentException("O grau académico (Licenciatura, Mestrado, etc.) é obrigatório.");
-        }
         this.nome = nome;
         this.codigo = codigo;
         this.duracaoAnos = duracaoAnos;
         this.grau = grau;
     }
 
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -73,9 +57,6 @@ public class Curso {
     }
 
     public void setNome(String nome) {
-    	if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do curso é obrigatório."); 
-        }
         this.nome = nome;
     }
 
@@ -84,10 +65,15 @@ public class Curso {
     }
 
     public void setCodigo(String codigo) {
-    	if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do curso é obrigatório."); 
-        }
         this.codigo = codigo;
+    }
+
+    public Coordenador getCoordenador() {
+        return coordenador;
+    }
+
+    public void setCoordenador(Coordenador coordenador) {
+        this.coordenador = coordenador;
     }
 
     public Departamento getDepartamento() {
@@ -103,9 +89,6 @@ public class Curso {
     }
 
     public void setDuracaoAnos(int duracaoAnos) {
-    	if (duracaoAnos <= 0) {
-            throw new IllegalArgumentException("A duração do curso deve ser maior que zero.");
-        }
         this.duracaoAnos = duracaoAnos;
     }
 
@@ -114,9 +97,6 @@ public class Curso {
     }
 
     public void setGrau(String grau) {
-    	if (grau == null || grau.isBlank()) {
-            throw new IllegalArgumentException("O grau académico (Licenciatura, Mestrado, etc.) é obrigatório.");
-        }
         this.grau = grau;
     }
 

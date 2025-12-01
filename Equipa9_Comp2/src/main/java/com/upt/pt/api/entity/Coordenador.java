@@ -1,96 +1,78 @@
 package com.upt.pt.api.entity;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.*;
 
 @Entity
 @Table(name = "coordenador")
 public class Coordenador extends Utilizador {
-	
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "departamento_id")
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "departamento_id")
     private Departamento departamento;
-	
-	@OneToMany(mappedBy = "coordenador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<Curso> cursosGeridos;
-	
-	 @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<OfertaEstagio> ofertasRegistadas;
-	 
-	 @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	 private List<Candidatura> candidaturasGeridas;
-    
+
+    @OneToMany(mappedBy = "coordenador", cascade = CascadeType.ALL,
+               orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Curso> cursosGeridos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL,
+               orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<OfertaEstagio> ofertasRegistadas = new ArrayList<>();
+
+    @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL,
+               orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Candidatura> candidaturasGeridas = new ArrayList<>();
+
     public Coordenador() {
+        super();
     }
-    
+
     public Coordenador(String nome, String email, String password, Departamento departamento) {
         super(nome, email, password);
-        
-        if (departamento == null) {
-            throw new IllegalArgumentException("O departamento tem de estar definido e já existir.");
-        }
-        
         this.departamento = departamento;
-        this.cursosGeridos = new ArrayList<>();
-        this.ofertasRegistadas = new ArrayList<>();
-        this.candidaturasGeridas = new ArrayList<>();
     }
 
-    public void registarOferta(OfertaEstagio oferta) {
-        this.ofertasRegistadas.add(oferta);
-        oferta.setCoordenadorResponsavel(this);
+    public Departamento getDepartamento() {
+        return departamento;
     }
 
-    public void aprovarOferta(OfertaEstagio oferta) {
-        oferta.aprovar();
+    public void setDepartamento(Departamento departamento) {
+        this.departamento = departamento;
     }
 
-    public void rejeitarOferta(OfertaEstagio oferta) {
-        oferta.rejeitar();
+    public List<Curso> getCursosGeridos() {
+        return cursosGeridos;
     }
 
-    public void adicionarCursoGerido(Curso curso) {
-        this.cursosGeridos.add(curso);
+    public void setCursosGeridos(List<Curso> cursosGeridos) {
+        this.cursosGeridos = cursosGeridos;
     }
-    
-	public Departamento getDepartamento() {
-		return departamento;
-	}
 
-	public void setDepartamento(Departamento departamento) {
-		if (departamento == null) {
-            throw new IllegalArgumentException("O departamento tem de estar definido e já existir.");
-        }
-		
-		this.departamento = departamento;
-	}
+    public List<OfertaEstagio> getOfertasRegistadas() {
+        return ofertasRegistadas;
+    }
 
-	public List<Curso> getCursosGeridos() {
-		return cursosGeridos;
-	}
+    public void setOfertasRegistadas(List<OfertaEstagio> ofertasRegistadas) {
+        this.ofertasRegistadas = ofertasRegistadas;
+    }
 
-	public List<OfertaEstagio> getOfertasRegistadas() {
-		return ofertasRegistadas;
-	}
-	
-	public List<Candidatura> getCandidaturasGeridas() {
-	    return candidaturasGeridas;
-	}
+    public List<Candidatura> getCandidaturasGeridas() {
+        return candidaturasGeridas;
+    }
 
-	public void adicionarCandidatura(Candidatura candidatura) {
-	    this.candidaturasGeridas.add(candidatura);
-	    candidatura.setCoordenadorResponsavel(this);
-	}
+    public void setCandidaturasGeridas(List<Candidatura> candidaturasGeridas) {
+        this.candidaturasGeridas = candidaturasGeridas;
+    }
 
-	@Override
+    @Override
     public String toString() {
         return "Coordenador{" +
                 "id='" + getId() + '\'' +
                 ", nome='" + getNome() + '\'' +
                 ", departamento=" + (departamento != null ? departamento.getNome() : "N/A") +
-                ", cursosGeridos=" + cursosGeridos.size() +
-                ", ofertasRegistadas=" + ofertasRegistadas.size() +
+                ", cursosGeridos=" + (cursosGeridos != null ? cursosGeridos.size() : 0) +
+                ", ofertasRegistadas=" + (ofertasRegistadas != null ? ofertasRegistadas.size() : 0) +
                 '}';
     }
-}    
+}

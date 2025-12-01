@@ -13,5 +13,4 @@ public class Equipa9Comp2Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Equipa9Comp2Application.class, args);
 	}
-
 }

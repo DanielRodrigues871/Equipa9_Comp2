@@ -2,13 +2,11 @@ package com.upt.pt.api.entity;
 
 import com.upt.pt.api.enums.StatusCandidatura;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Classe que representa uma candidatura de um estudante a uma oferta
- */
 @Entity
 @Table(name = "candidatura")
 public class Candidatura {
@@ -20,7 +18,7 @@ public class Candidatura {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "estudante_id", nullable = false)
     private Estudante estudante;
-    
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coordenador_responsavel_id")
     private Coordenador coordenadorResponsavel;
@@ -51,20 +49,10 @@ public class Candidatura {
         this.dataSubmissao = LocalDateTime.now();
     }
 
-    public Candidatura(Estudante estudante, OfertaEstagio oferta, String cartaMotivacao) {
+    public Candidatura(Estudante estudante,
+                       OfertaEstagio oferta,
+                       String cartaMotivacao) {
         this();
-        if (estudante == null) {
-            throw new IllegalArgumentException("Estudante obrigatório.");
-        }
-        if (oferta == null) {
-            throw new IllegalArgumentException("Oferta obrigatória.");
-        }
-        if (cartaMotivacao == null || cartaMotivacao.isBlank()) {
-            throw new IllegalArgumentException("Deves submeter uma carta de motivação.");
-        }
-        if (cartaMotivacao.length() < 50) {
-            throw new IllegalArgumentException("A carta de motivação deve ter pelo menos 50 caracteres.");
-        }    
         this.estudante = estudante;
         this.oferta = oferta;
         this.cartaMotivacao = cartaMotivacao;
@@ -86,7 +74,6 @@ public class Candidatura {
         this.observacoes = observacoes;
     }
 
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -100,10 +87,15 @@ public class Candidatura {
     }
 
     public void setEstudante(Estudante estudante) {
-    	if (estudante == null) {
-            throw new IllegalArgumentException("Estudante obrigatório.");
-        }
         this.estudante = estudante;
+    }
+
+    public Coordenador getCoordenadorResponsavel() {
+        return coordenadorResponsavel;
+    }
+
+    public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) {
+        this.coordenadorResponsavel = coordenadorResponsavel;
     }
 
     public OfertaEstagio getOferta() {
@@ -111,9 +103,6 @@ public class Candidatura {
     }
 
     public void setOferta(OfertaEstagio oferta) {
-    	if (oferta == null) {
-            throw new IllegalArgumentException("Oferta obrigatória.");
-        }
         this.oferta = oferta;
     }
 
@@ -130,12 +119,6 @@ public class Candidatura {
     }
 
     public void setCartaMotivacao(String cartaMotivacao) {
-    	if (cartaMotivacao == null || cartaMotivacao.isBlank()) {
-            throw new IllegalArgumentException("Deves submeter uma carta de motivação.");
-        }
-        if (cartaMotivacao.length() < 50) {
-            throw new IllegalArgumentException("A carta de motivação deve ter pelo menos 50 caracteres.");
-        }    
         this.cartaMotivacao = cartaMotivacao;
     }
 
@@ -143,8 +126,16 @@ public class Candidatura {
         return dataSubmissao;
     }
 
+    public void setDataSubmissao(LocalDateTime dataSubmissao) {
+        this.dataSubmissao = dataSubmissao;
+    }
+
     public LocalDateTime getDataAnalise() {
         return dataAnalise;
+    }
+
+    public void setDataAnalise(LocalDateTime dataAnalise) {
+        this.dataAnalise = dataAnalise;
     }
 
     public String getObservacoes() {
@@ -155,10 +146,6 @@ public class Candidatura {
         this.observacoes = observacoes;
     }
 
-    public void setCoordenadorResponsavel(Coordenador coordenador) {
-        this.coordenadorResponsavel = coordenador;
-    }
-    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

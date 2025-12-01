@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.upt.pt.api.dto.RegistroDTO;
 import com.upt.pt.api.entity.Empresa;
 import com.upt.pt.api.entity.RepresentanteEmpresa;
 import com.upt.pt.api.repository.EmpresaRepository;
 import com.upt.pt.api.repository.RepresentanteEmpresaRepository;
-import com.upt.pt.api.security.PasswordUtil;
+import com.upt.pt.api.security.PasswordUtils;
 
 @Service
 public class RepresentanteEmpresaService {
@@ -29,6 +30,11 @@ public class RepresentanteEmpresaService {
 
         Empresa empresa = empresaRepository.findById(empresaId).get();
         r.setEmpresa(empresa);
+
+        // garantir hash da password se vier em texto
+        if (r.getPassword() != null && !r.getPassword().isBlank()) {
+            r.setPassword(PasswordUtils.hashPassword(r.getPassword()));
+        }
 
         return representanteRepository.save(r);
     }
@@ -59,7 +65,11 @@ public class RepresentanteEmpresaService {
 
         existente.setNome(dados.getNome());
         existente.setEmail(dados.getEmail());
-        existente.setPassword(dados.getPassword());
+
+        if (dados.getPassword() != null && !dados.getPassword().isBlank()) {
+            existente.setPassword(PasswordUtils.hashPassword(dados.getPassword()));
+        }
+
         existente.setCargo(dados.getCargo());
         existente.setTelefone(dados.getTelefone());
         existente.setEmpresa(empresa);
@@ -74,10 +84,30 @@ public class RepresentanteEmpresaService {
         representanteRepository.delete(r);
     }
 
+    // CREATE a partir do registo (AuthService)
+    public RepresentanteEmpresa createFromRegister(RegistroDTO dto) {
+        if (dto.getPassword() == null) {
+            throw new IllegalArgumentException("Password é obrigatória.");
+        }
+
+        String hashed = PasswordUtils.hashPassword(dto.getPassword());
+
+        Empresa empresa = empresaRepository.findById(dto.getEmpresaId())
+                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada."));
+
+        RepresentanteEmpresa r = new RepresentanteEmpresa();
+        r.setNome(dto.getNome());
+        r.setEmail(dto.getEmail());
+        r.setPassword(hashed);
+        r.setEmpresa(empresa);
+        // se tiveres campo 'cargo' obrigatório, podes definir um default ou acrescentar ao DTO
+
+        return representanteRepository.save(r);
+    }
+
     // =========================
     //   MÉTODO DE VALIDAÇÃO
     // =========================
-    
     private void validarDadosRepresentante(RepresentanteEmpresa r, String empresaId, String idAtual) {
         if (r == null) {
             throw new IllegalArgumentException("Representante não pode ser nulo.");
@@ -93,27 +123,26 @@ public class RepresentanteEmpresaService {
             throw new IllegalArgumentException("O email é obrigatório e deve ser válido.");
         }
 
-        PasswordUtil.validarPasswordForte(r.getPassword());
+        // Password forte se fornecida neste fluxo
+        if (r.getPassword() != null) {
+            PasswordUtils.validarPasswordForte(r.getPassword());
+        }
 
         // Cargo
         if (r.getCargo() == null || r.getCargo().isBlank()) {
             throw new IllegalArgumentException("O cargo é obrigatório.");
         }
 
-        // Telefone: opcional, mas se vier, valida formato:
-        // - 9 dígitos
-        // - começa com 251 OU começa com 9
+        // Telefone opcional mas validado se existir
         if (r.getTelefone() != null && !r.getTelefone().isBlank()) {
-        	String tel = r.getTelefone().replaceAll("\\s+", "");
-
-        // permite "251" + 6 dígitos (total 9) OU "9" + 8 dígitos (total 9)
-        if (!tel.matches("^(251\\d{6}|9\\d{8})$")) {
-             throw new IllegalArgumentException(
-                     "O telefone deve ter 9 dígitos e começar por 251 ou por 9.");
+            String tel = r.getTelefone().replaceAll("\\s+", "");
+            if (!tel.matches("^(251\\d{6}|9\\d{8})$")) {
+                throw new IllegalArgumentException(
+                        "O telefone deve ter 9 dígitos e começar por 251 ou por 9.");
+            }
         }
-    }
 
-        // Empresa obrigatória e existente (id String)
+        // Empresa obrigatória e existente
         if (empresaId == null || empresaId.isBlank()) {
             throw new IllegalArgumentException("A empresa é obrigatória.");
         }
@@ -121,7 +150,7 @@ public class RepresentanteEmpresaService {
             throw new IllegalArgumentException("A empresa indicada não existe.");
         }
 
-        // Unicidade do email entre representantes 
+        // Unicidade do email
         Optional<RepresentanteEmpresa> existenteEmail =
                 representanteRepository.findByEmail(r.getEmail());
 

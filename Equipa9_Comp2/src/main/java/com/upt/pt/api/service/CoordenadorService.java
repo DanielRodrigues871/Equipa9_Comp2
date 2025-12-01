@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.upt.pt.api.dto.RegistroDTO;
 import com.upt.pt.api.entity.Coordenador;
 import com.upt.pt.api.entity.Departamento;
 import com.upt.pt.api.repository.CoordenadorRepository;
 import com.upt.pt.api.repository.DepartamentoRepository;
-import com.upt.pt.api.security.PasswordUtil;
+import com.upt.pt.api.security.PasswordUtils;
 
 @Service
 public class CoordenadorService {
@@ -29,6 +30,11 @@ public class CoordenadorService {
 
         Departamento departamento = departamentoRepository.findById(departamentoId).get();
         c.setDepartamento(departamento);
+
+        // garantir que a password fica cifrada se vier em texto
+        if (c.getPassword() != null && !c.getPassword().isBlank()) {
+            c.setPassword(PasswordUtils.hashPassword(c.getPassword()));
+        }
 
         return coordenadorRepository.save(c);
     }
@@ -54,7 +60,11 @@ public class CoordenadorService {
 
         existente.setNome(dados.getNome());
         existente.setEmail(dados.getEmail());
-        existente.setPassword(dados.getPassword());
+
+        if (dados.getPassword() != null && !dados.getPassword().isBlank()) {
+            existente.setPassword(PasswordUtils.hashPassword(dados.getPassword()));
+        }
+
         existente.setDepartamento(departamento);
 
         return coordenadorRepository.save(existente);
@@ -63,8 +73,28 @@ public class CoordenadorService {
     // DELETE
     public void deleteCoordenador(String id) {
         Coordenador c = getCoordenadorById(id);
-        // aqui podes pôr regra: não apagar se tiver cursosGeridos, etc.
+        // aqui podes pôr regras: não apagar se tiver cursosGeridos, etc.
         coordenadorRepository.delete(c);
+    }
+
+    // CREATE a partir do registo (AuthService)
+    public Coordenador createFromRegister(RegistroDTO dto) {
+        if (dto.getPassword() == null) {
+            throw new IllegalArgumentException("Password é obrigatória.");
+        }
+
+        String hashed = PasswordUtils.hashPassword(dto.getPassword());
+
+        Departamento dep = departamentoRepository.findById(dto.getDepartamentoId())
+                .orElseThrow(() -> new IllegalArgumentException("Departamento não encontrado."));
+
+        Coordenador c = new Coordenador();
+        c.setNome(dto.getNome());
+        c.setEmail(dto.getEmail());
+        c.setPassword(hashed);
+        c.setDepartamento(dep);
+
+        return coordenadorRepository.save(c);
     }
 
     // =========================
@@ -85,9 +115,11 @@ public class CoordenadorService {
             throw new IllegalArgumentException("O email é obrigatório e deve ser válido.");
         }
 
-        // Password 
-        PasswordUtil.validarPasswordForte(c.getPassword());
-        
+        // Password forte se fornecida neste fluxo
+        if (c.getPassword() != null) {
+            PasswordUtils.validarPasswordForte(c.getPassword());
+        }
+
         // Departamento obrigatório e existente
         if (departamentoId == null || departamentoId.isBlank()) {
             throw new IllegalArgumentException("O departamento é obrigatório.");
@@ -96,8 +128,7 @@ public class CoordenadorService {
             throw new IllegalArgumentException("O departamento indicado não existe.");
         }
 
-        // Unicidade do email (entre coordenadores; se quiseres global em Utilizador,
-        // usarias um UtilizadorRepository em vez deste)
+        // Unicidade do email entre coordenadores
         Optional<Coordenador> existenteEmail = coordenadorRepository.findByEmail(c.getEmail());
         if (existenteEmail.isPresent()
                 && (idAtual == null || !existenteEmail.get().getId().equals(idAtual))) {

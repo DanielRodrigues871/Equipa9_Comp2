@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.upt.pt.api.dto.RegistroDTO;
 import com.upt.pt.api.entity.Curso;
 import com.upt.pt.api.entity.Estudante;
 import com.upt.pt.api.repository.CursoRepository;
 import com.upt.pt.api.repository.EstudanteRepository;
-import com.upt.pt.api.security.PasswordUtil;
+import com.upt.pt.api.security.PasswordUtils;
 
 @Service
 public class EstudanteService {
@@ -30,6 +31,11 @@ public class EstudanteService {
         // curso já foi validado em validarDadosEstudante
         Curso curso = cursoRepository.findById(cursoId).get();
         e.setCurso(curso);
+
+        // garantir que a password vai encriptada
+        if (e.getPassword() != null) {
+            e.setPassword(PasswordUtils.hashPassword(e.getPassword()));
+        }
 
         return estudanteRepository.save(e);
     }
@@ -55,7 +61,11 @@ public class EstudanteService {
 
         existente.setNome(dados.getNome());
         existente.setEmail(dados.getEmail());
-        existente.setPassword(dados.getPassword());
+
+        if (dados.getPassword() != null && !dados.getPassword().isBlank()) {
+            existente.setPassword(PasswordUtils.hashPassword(dados.getPassword()));
+        }
+
         existente.setNumeroEstudante(dados.getNumeroEstudante());
         existente.setAnoMatricula(dados.getAnoMatricula());
         existente.setMedia(dados.getMedia());
@@ -72,9 +82,35 @@ public class EstudanteService {
         estudanteRepository.delete(e);
     }
 
-    // Estudantes com média > 9.5
+    // Estudantes com média >= 9.5
     public List<Estudante> getEstudantesComMediaMaiorQue9_5() {
         return estudanteRepository.findByMediaGreaterThanEqual(9.5);
+    }
+
+    // CREATE a partir do registo (AuthService)
+    public Estudante createFromRegister(RegistroDTO dto) {
+        if (dto.getPassword() == null) {
+            throw new IllegalArgumentException("Password é obrigatória.");
+        }
+
+        // valida força + gera hash
+        String hashed = PasswordUtils.hashPassword(dto.getPassword());
+
+        Curso curso = cursoRepository.findById(dto.getCursoId())
+                .orElseThrow(() -> new IllegalArgumentException("Curso não encontrado."));
+
+        Estudante e = new Estudante();
+        e.setNome(dto.getNome());
+        e.setEmail(dto.getEmail());
+        e.setPassword(hashed);
+        e.setCurso(curso);
+
+        // se quiseres, podes definir defaults:
+        // e.setNumeroEstudante(dto.getNumeroEstudante() ou "00000");
+        // e.setAnoMatricula(1);
+        // e.setMedia(0.0);
+
+        return estudanteRepository.save(e);
     }
 
     // =========================
@@ -96,8 +132,10 @@ public class EstudanteService {
             throw new IllegalArgumentException("O email é obrigatório e deve ser válido.");
         }
 
-        // Password
-        PasswordUtil.validarPasswordForte(e.getPassword());
+        // Password forte (se estiver a ser fornecida neste fluxo)
+        if (e.getPassword() != null) {
+            PasswordUtils.validarPasswordForte(e.getPassword());
+        }
 
         // Número de estudante: exatamente 5 dígitos
         if (e.getNumeroEstudante() == null || !e.getNumeroEstudante().matches("\\d{5}")) {
@@ -114,7 +152,7 @@ public class EstudanteService {
             throw new IllegalArgumentException("A média deve estar entre 0 e 20.");
         }
 
-        // Curso obrigatório e existente (id é String)
+        // Curso obrigatório e existente
         if (cursoId == null || cursoId.isBlank()) {
             throw new IllegalArgumentException("O curso é obrigatório.");
         }
