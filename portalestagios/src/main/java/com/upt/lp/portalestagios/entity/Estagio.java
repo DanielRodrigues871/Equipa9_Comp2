@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "estagio")
@@ -12,8 +13,8 @@ public class Estagio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", length = 36, nullable = false)
-    private String id;
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "estudante_id")
@@ -31,6 +32,12 @@ public class Estagio {
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
+    
+    public LocalDateTime getDataInicio() { return dataInicio; }
+    public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }
+
+    public LocalDateTime getDataFim() { return dataFim; }
+    public void setDataFim(LocalDateTime dataFim) { this.dataFim = dataFim; }
 
     @OneToMany(mappedBy = "estagio", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Documento> documentos = new ArrayList<>();
@@ -50,9 +57,10 @@ public class Estagio {
         this.documentos.add(documento);
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
     public Estudante getEstudante() { return estudante; }
     public PropostaEstagio getProposta() { return proposta; }
+    
     public List<Documento> getDocumentos() { return documentos; }
     public LocalDateTime getDataCriacao() { return dataCriacao; }
 

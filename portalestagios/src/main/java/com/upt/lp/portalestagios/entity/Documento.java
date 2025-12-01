@@ -3,6 +3,7 @@ package com.upt.lp.portalestagios.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "documento")
@@ -10,11 +11,11 @@ public class Documento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "estagio_id")
+    @JoinColumn(name = "estagio_id", nullable = false)
     private Estagio estagio;
 
     @Column(name = "tipo", nullable = false, length = 50)
@@ -37,7 +38,7 @@ public class Documento {
         this.ficheiro = ficheiro;
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
     public Estagio getEstagio() { return estagio; }
     public void setEstagio(Estagio estagio) { this.estagio = estagio; }
     public String getTipo() { return tipo; }

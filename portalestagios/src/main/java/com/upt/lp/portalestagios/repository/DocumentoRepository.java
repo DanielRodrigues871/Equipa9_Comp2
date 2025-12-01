@@ -4,15 +4,11 @@ import com.upt.lp.portalestagios.entity.Documento;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface DocumentoRepository extends JpaRepository<Documento, UUID> {
 
-    List<Documento> findByEstudanteId(UUID estudanteId);
-
-    List<Documento> findByCandidaturaId(UUID candidaturaId);
+    List<Documento> findByEstagio_Id(UUID estagioId);
 }
-

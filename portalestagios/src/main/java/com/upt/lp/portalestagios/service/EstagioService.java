@@ -1,34 +1,62 @@
 package com.upt.lp.portalestagios.service;
 
-import com.upt.lp.portalestagios.entity.Estagio;
-import com.upt.lp.portalestagios.repository.EstagioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.upt.lp.portalestagios.dto.estagio.EstagioRequestDTO;
+import com.upt.lp.portalestagios.dto.estagio.EstagioResponseDTO;
+import com.upt.lp.portalestagios.entity.*;
+import com.upt.lp.portalestagios.mapper.EstagioMapper;
+import com.upt.lp.portalestagios.repository.*;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class EstagioService {
 
-    @Autowired
-    private EstagioRepository estagioRepository;
+    private final EstagioRepository repo;
+    private final EstudanteRepository estudanteRepo;
+    private final PropostaEstagioRepository propostaRepo;
 
-    public List<Estagio> findAll() {
-        return estagioRepository.findAll();
+    public EstagioService(
+            EstagioRepository repo,
+            EstudanteRepository estudanteRepo,
+            PropostaEstagioRepository propostaRepo
+    ) {
+        this.repo = repo;
+        this.estudanteRepo = estudanteRepo;
+        this.propostaRepo = propostaRepo;
     }
 
-    public Optional<Estagio> findById(UUID id) {
-        return estagioRepository.findById(id);
+    public List<EstagioResponseDTO> listar() {
+        return repo.findAll()
+                .stream()
+                .map(EstagioMapper::toDTO)
+                .toList();
     }
 
-    public Estagio save(Estagio estagio) {
-        return estagioRepository.save(estagio);
+    public EstagioResponseDTO buscar(UUID id) {
+        Estagio e = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estágio não encontrado"));
+        return EstagioMapper.toDTO(e);
     }
 
-    public void delete(UUID id) {
-        estagioRepository.deleteById(id);
+    public EstagioResponseDTO criar(EstagioRequestDTO dto) {
+        Estudante est = estudanteRepo.findById(dto.getEstudanteId())
+                .orElseThrow(() -> new RuntimeException("Estudante não encontrado"));
+
+        PropostaEstagio prop = propostaRepo.findById(dto.getPropostaId())
+                .orElseThrow(() -> new RuntimeException("Proposta não encontrada"));
+
+        Estagio novo = new Estagio(est, prop);
+
+        novo.setDataInicio(dto.getDataInicio());
+        novo.setDataFim(dto.getDataFim());
+
+        return EstagioMapper.toDTO(repo.save(novo));
+    }
+
+    public void apagar(UUID id) {
+        repo.deleteById(id);
     }
 }
-
