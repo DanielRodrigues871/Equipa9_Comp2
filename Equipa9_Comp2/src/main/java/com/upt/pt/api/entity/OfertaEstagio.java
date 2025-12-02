@@ -1,5 +1,6 @@
 package com.upt.pt.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.upt.pt.api.enums.StatusOferta;
 import com.upt.pt.api.enums.TipoEstagio;
 import jakarta.persistence.*;
@@ -71,6 +72,7 @@ public class OfertaEstagio {
     private int numeroVagas;
 
     @OneToMany(mappedBy = "oferta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Candidatura> candidaturas = new ArrayList<>();
 
     @Column(name = "data_publicacao")

@@ -4,24 +4,28 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "coordenador")
 public class Coordenador extends Utilizador {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "departamento_id")
     private Departamento departamento;
 
     @OneToMany(mappedBy = "coordenador", cascade = CascadeType.ALL,
-               orphanRemoval = true, fetch = FetchType.LAZY)
+               orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Curso> cursosGeridos = new ArrayList<>();
 
     @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL,
-               orphanRemoval = true, fetch = FetchType.LAZY)
+               orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<OfertaEstagio> ofertasRegistadas = new ArrayList<>();
 
     @OneToMany(mappedBy = "coordenadorResponsavel", cascade = CascadeType.ALL,
-               orphanRemoval = true, fetch = FetchType.LAZY)
+               orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Candidatura> candidaturasGeridas = new ArrayList<>();
 
     public Coordenador() {

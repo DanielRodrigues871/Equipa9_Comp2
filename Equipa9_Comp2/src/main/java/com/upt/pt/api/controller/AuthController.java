@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.upt.pt.api.dto.RegistroDTO;
+import com.upt.pt.api.dto.LoginRequestDTO;
+import com.upt.pt.api.dto.LoginResponseDTO;
+import com.upt.pt.api.dto.RegistoDTO;
 import com.upt.pt.api.service.AuthService;
 
 @RestController
@@ -17,10 +19,20 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // POST /api/auth/register
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@RequestBody RegistroDTO dto) {
+    public ResponseEntity<Object> register(@RequestBody RegistoDTO dto) {
         Object created = authService.register(dto);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
+        try {
+            LoginResponseDTO resp = authService.login(dto);
+            return ResponseEntity.ok(resp);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
 }

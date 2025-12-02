@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.upt.pt.api.dto.RegistroDTO;
+import com.upt.pt.api.dto.RegistoDTO;
 import com.upt.pt.api.entity.Empresa;
 import com.upt.pt.api.entity.RepresentanteEmpresa;
 import com.upt.pt.api.repository.EmpresaRepository;
@@ -85,25 +85,30 @@ public class RepresentanteEmpresaService {
     }
 
     // CREATE a partir do registo (AuthService)
-    public RepresentanteEmpresa createFromRegister(RegistroDTO dto) {
+    public RepresentanteEmpresa createFromRegister(RegistoDTO dto) {
         if (dto.getPassword() == null) {
             throw new IllegalArgumentException("Password é obrigatória.");
+        }
+        if (dto.getCargo() == null || dto.getCargo().isBlank()) {
+            throw new IllegalArgumentException("O cargo é obrigatório.");
         }
 
         String hashed = PasswordUtils.hashPassword(dto.getPassword());
 
-        Empresa empresa = empresaRepository.findById(dto.getEmpresaId())
+        Empresa emp = empresaRepository.findById(dto.getEmpresaId())
                 .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada."));
 
         RepresentanteEmpresa r = new RepresentanteEmpresa();
         r.setNome(dto.getNome());
         r.setEmail(dto.getEmail());
         r.setPassword(hashed);
-        r.setEmpresa(empresa);
-        // se tiveres campo 'cargo' obrigatório, podes definir um default ou acrescentar ao DTO
+        r.setCargo(dto.getCargo());
+        r.setTelefone(dto.getTelefone());
+        r.setEmpresa(emp);
 
         return representanteRepository.save(r);
     }
+
 
     // =========================
     //   MÉTODO DE VALIDAÇÃO

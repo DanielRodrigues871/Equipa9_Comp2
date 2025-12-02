@@ -2,6 +2,9 @@ package com.upt.pt.api.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -29,10 +32,12 @@ public class Estudante extends Utilizador {
 
     @OneToMany(mappedBy = "estudante", cascade = CascadeType.ALL,
                orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Candidatura> candidaturas;
 
     @OneToMany(mappedBy = "estudante", cascade = CascadeType.ALL,
                orphanRemoval = true)
+    @JsonIgnore
     private List<Documento> documentos;
 
     public Estudante() {

@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.upt.pt.api.dto.RegistroDTO;
+import com.upt.pt.api.dto.RegistoDTO;
 import com.upt.pt.api.entity.Coordenador;
 import com.upt.pt.api.entity.Departamento;
 import com.upt.pt.api.repository.CoordenadorRepository;
@@ -78,7 +78,7 @@ public class CoordenadorService {
     }
 
     // CREATE a partir do registo (AuthService)
-    public Coordenador createFromRegister(RegistroDTO dto) {
+    public Coordenador createFromRegister(RegistoDTO dto) {
         if (dto.getPassword() == null) {
             throw new IllegalArgumentException("Password é obrigatória.");
         }
@@ -96,6 +96,7 @@ public class CoordenadorService {
 
         return coordenadorRepository.save(c);
     }
+
 
     // =========================
     //   MÉTODO DE VALIDAÇÃO

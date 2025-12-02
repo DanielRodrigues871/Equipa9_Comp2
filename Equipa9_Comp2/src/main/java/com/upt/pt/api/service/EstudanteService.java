@@ -1,11 +1,12 @@
 package com.upt.pt.api.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.upt.pt.api.dto.RegistroDTO;
+import com.upt.pt.api.dto.RegistoDTO;
 import com.upt.pt.api.entity.Curso;
 import com.upt.pt.api.entity.Estudante;
 import com.upt.pt.api.repository.CursoRepository;
@@ -88,12 +89,17 @@ public class EstudanteService {
     }
 
     // CREATE a partir do registo (AuthService)
-    public Estudante createFromRegister(RegistroDTO dto) {
+    public Estudante createFromRegister(RegistoDTO dto) {
         if (dto.getPassword() == null) {
             throw new IllegalArgumentException("Password é obrigatória.");
         }
+        if (dto.getNumeroEstudante() == null || !dto.getNumeroEstudante().matches("\\d{5}")) {
+            throw new IllegalArgumentException("O número de estudante deve ter exatamente 5 dígitos numéricos.");
+        }
+        if (dto.getAnoMatricula() == null || dto.getAnoMatricula() < 1) {
+            throw new IllegalArgumentException("O ano de matrícula deve ser maior ou igual a 1.");
+        }
 
-        // valida força + gera hash
         String hashed = PasswordUtils.hashPassword(dto.getPassword());
 
         Curso curso = cursoRepository.findById(dto.getCursoId())
@@ -104,14 +110,14 @@ public class EstudanteService {
         e.setEmail(dto.getEmail());
         e.setPassword(hashed);
         e.setCurso(curso);
-
-        // se quiseres, podes definir defaults:
-        // e.setNumeroEstudante(dto.getNumeroEstudante() ou "00000");
-        // e.setAnoMatricula(1);
-        // e.setMedia(0.0);
+        e.setNumeroEstudante(dto.getNumeroEstudante());
+        e.setAnoMatricula(dto.getAnoMatricula());
+        e.setMedia(0.0);
+        e.setCompetencias(new ArrayList<>());
 
         return estudanteRepository.save(e);
     }
+
 
     // =========================
     //   MÉTODO DE VALIDAÇÃO

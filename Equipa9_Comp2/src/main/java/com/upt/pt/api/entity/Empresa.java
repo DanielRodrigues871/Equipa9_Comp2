@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "empresa")
 public class Empresa {
@@ -40,9 +42,11 @@ public class Empresa {
     private boolean ativa;
 
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<RepresentanteEmpresa> representantes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<OfertaEstagio> ofertasSubmetidas = new ArrayList<>();
 
     @Column(name = "data_criacao")

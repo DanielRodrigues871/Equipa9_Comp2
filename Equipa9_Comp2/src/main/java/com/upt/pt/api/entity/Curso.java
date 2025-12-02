@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "curso")
 public class Curso {
@@ -24,6 +26,7 @@ public class Curso {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id")
+    @JsonBackReference
     private Departamento departamento;
 
     @Column(name = "duracao_anos")
