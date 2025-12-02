@@ -13,6 +13,7 @@ import java.util.UUID;
 public class Empresa {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 36)
     private String id;
 
