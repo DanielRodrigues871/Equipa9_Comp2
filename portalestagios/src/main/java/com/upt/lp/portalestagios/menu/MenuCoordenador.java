@@ -5,6 +5,7 @@ import com.upt.lp.portalestagios.entity.Utilizador;
 import com.upt.lp.portalestagios.service.CandidaturaService;
 import com.upt.lp.portalestagios.service.OfertaEstagioService;
 import com.upt.lp.portalestagios.service.CursoService;
+import com.upt.lp.portalestagios.service.EstatisticasService;
 import com.upt.lp.portalestagios.util.SessaoUtil;
 
 import java.util.Scanner;
@@ -15,13 +16,15 @@ public class MenuCoordenador {
     private final OfertaEstagioService ofertaService;
     private final CandidaturaService candidaturaService;
     private final CursoService cursoService;
+    private final EstatisticasService estatisticasService;
 
     public MenuCoordenador(OfertaEstagioService ofertaService,
                            CandidaturaService candidaturaService,
-                           CursoService cursoService) {
+                           CursoService cursoService, EstatisticasService estatisticasService) {
         this.ofertaService = ofertaService;
         this.candidaturaService = candidaturaService;
         this.cursoService = cursoService;
+        this.estatisticasService = estatisticasService;
     }
 
     public void mostrar() {
@@ -47,6 +50,7 @@ public class MenuCoordenador {
             System.out.println("5 - Ver candidaturas");
             System.out.println("6 - Gerir candidatura");
             System.out.println("7 - Criar curso");
+            System.out.println("8 - Ver Estatisticas");
             System.out.println("0 - Voltar");
 
             System.out.print("Opção: ");
@@ -130,6 +134,32 @@ public class MenuCoordenador {
         String grau = sc.nextLine();
 
         cursoService.criar(nome, codigo, duracao, grau, coord.getDepartamento().getId());
+    }
+    
+    private void verEstatisticas() {
+        System.out.println("\n===== ESTATÍSTICAS =====");
+
+        System.out.println("Total de estudantes: " + estatisticasService.totalEstudantes());
+        System.out.println("Total de empresas: " + estatisticasService.totalEmpresas());
+        System.out.println("Total de ofertas: " + estatisticasService.totalOfertas());
+        System.out.println("Total de candidaturas: " + estatisticasService.totalCandidaturas());
+        System.out.println("Total de estágios: " + estatisticasService.totalEstagios());
+
+        System.out.println("\n--- Ofertas por status ---");
+        estatisticasService.ofertasPorStatus().forEach((k, v) ->
+                System.out.println(k + ": " + v));
+
+        System.out.println("\n--- Candidaturas por estado ---");
+        estatisticasService.candidaturasPorEstado().forEach((k, v) ->
+                System.out.println(k + ": " + v));
+
+        System.out.println("\n--- Ofertas por empresa ---");
+        estatisticasService.ofertasPorEmpresa().forEach((k, v) ->
+                System.out.println(k + ": " + v));
+
+        System.out.println("\n--- Candidaturas por curso ---");
+        estatisticasService.candidaturasPorCurso().forEach((k, v) ->
+                System.out.println(k + ": " + v));
     }
 }
 

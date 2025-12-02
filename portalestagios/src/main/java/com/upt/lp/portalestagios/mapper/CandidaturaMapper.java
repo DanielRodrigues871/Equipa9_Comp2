@@ -3,8 +3,6 @@ package com.upt.lp.portalestagios.mapper;
 import com.upt.lp.portalestagios.dto.candidatura.CandidaturaRequestDTO;
 import com.upt.lp.portalestagios.dto.candidatura.CandidaturaResponseDTO;
 import com.upt.lp.portalestagios.entity.Candidatura;
-import com.upt.lp.portalestagios.entity.Estudante;
-import com.upt.lp.portalestagios.entity.OfertaEstagio;
 import java.util.UUID;
 
 public class CandidaturaMapper {

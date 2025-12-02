@@ -22,7 +22,7 @@ public class AuthService {
     private final DepartamentoRepository departamentoRepo;
     private final CursoRepository cursoRepo;
 
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder encoder;
 
     public AuthService(UtilizadorRepository utilizadorRepo,
                        EstudanteRepository estudanteRepo,
@@ -30,7 +30,7 @@ public class AuthService {
                        RepresentanteEmpresaRepository representanteRepo,
                        EmpresaRepository empresaRepo,
                        DepartamentoRepository departamentoRepo,
-                       CursoRepository cursoRepo) {
+                       CursoRepository cursoRepo, BCryptPasswordEncoder encoder) {
         this.utilizadorRepo = utilizadorRepo;
         this.estudanteRepo = estudanteRepo;
         this.coordenadorRepo = coordenadorRepo;
@@ -38,6 +38,7 @@ public class AuthService {
         this.empresaRepo = empresaRepo;
         this.departamentoRepo = departamentoRepo;
         this.cursoRepo = cursoRepo;
+        this.encoder = encoder;
     }
 
     // ---------------------------
@@ -45,8 +46,15 @@ public class AuthService {
     // ---------------------------
     public Utilizador login(LoginRequestDTO dto) {
         Optional<Utilizador> ou = utilizadorRepo.findByEmail(dto.getEmail());
-        if (ou.isEmpty()) return null;
+        if (ou.isEmpty()) {
+            System.out.println("Email não encontrado: " + dto.getEmail());
+            return null;
+        }
         Utilizador u = ou.get();
+
+        System.out.println("Password digitada: [" + dto.getPassword() + "]");
+        System.out.println("Password hash bd: [" + u.getPassword() + "]");
+        System.out.println("Matches: " + encoder.matches(dto.getPassword(), u.getPassword()));
 
         if (!encoder.matches(dto.getPassword(), u.getPassword())) return null;
         return u;

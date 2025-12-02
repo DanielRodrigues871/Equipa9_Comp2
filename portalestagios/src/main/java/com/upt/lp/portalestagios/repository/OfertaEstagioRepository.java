@@ -39,4 +39,7 @@ public interface OfertaEstagioRepository extends JpaRepository<OfertaEstagio, UU
     
  // Filtrar por coordenador responsável
     List<OfertaEstagio> findByCoordenadorResponsavelId(UUID coordId);
+    
+    long countByStatus(StatusOferta status);
+
 }

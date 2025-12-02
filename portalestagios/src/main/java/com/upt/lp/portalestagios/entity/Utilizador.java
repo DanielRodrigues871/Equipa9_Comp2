@@ -3,7 +3,7 @@ package com.upt.lp.portalestagios.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.UUID;
 
 @Entity
@@ -31,12 +31,9 @@ public abstract class Utilizador {
     @Column(name = "data_atualizacao", nullable = false)
     protected LocalDateTime dataAtualizacao;
 
-    private static final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    
 
-    /** Hash da password */
-    private static String hashPassword(String plainPassword) {
-        return encoder.encode(plainPassword);
-    }
+    
 
     public Utilizador() {
         // Hibernate vai gerar o UUID — não gerar manualmente!
@@ -45,7 +42,7 @@ public abstract class Utilizador {
     public Utilizador(String nome, String email, String password) {
         this.nome = nome;
         this.email = email;
-        this.password = hashPassword(password);
+        this.password = password;
     }
 
     // Getters e Setters
@@ -82,7 +79,7 @@ public void setId(UUID id) {
     }
 
     public void setPassword(String password) {
-        this.password = hashPassword(password);
+        this.password = password;
         this.dataAtualizacao = LocalDateTime.now();
     }
 
