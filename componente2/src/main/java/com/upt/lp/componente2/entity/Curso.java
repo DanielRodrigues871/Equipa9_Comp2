@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 @Table(name = "curso")
 public class Curso {
@@ -12,56 +14,39 @@ public class Curso {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "nome", nullable = false, length = 200)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 20)
+    @Column(name = "codigo", nullable = false, unique = true)
     private String codigo;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coordenador_id")
     private Coordenador coordenador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departamento_id")
+    @JsonBackReference
     private Departamento departamento;
 
     @Column(name = "duracao_anos")
-    private Integer duracaoAnos;
+    private int duracaoAnos;
 
-    @Column(name = "grau", length = 50)
-    private String grau;
+    @Column(name = "grau")
+    private String grau; // Licenciatura, Mestrado, etc.
 
     public Curso() {
         this.id = UUID.randomUUID().toString();
     }
 
-    public Curso(String nome, String codigo, Integer duracaoAnos, String grau) {
+    public Curso(String nome, String codigo, int duracaoAnos, String grau) {
         this();
-        validarCurso(nome, codigo, duracaoAnos, grau);
-        
         this.nome = nome;
         this.codigo = codigo;
         this.duracaoAnos = duracaoAnos;
         this.grau = grau;
     }
 
-    private void validarCurso(String nome, String codigo, Integer duracaoAnos, String grau) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do curso é obrigatório."); 
-        }
-        if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do curso é obrigatório."); 
-        }
-        if (duracaoAnos != null && duracaoAnos <= 0) {
-            throw new IllegalArgumentException("A duração do curso deve ser maior que zero.");
-        }
-        if (grau == null || grau.isBlank()) {
-            throw new IllegalArgumentException("O grau académico (Licenciatura, Mestrado, etc.) é obrigatório.");
-        }
-    }
-
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -75,9 +60,6 @@ public class Curso {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do curso é obrigatório."); 
-        }
         this.nome = nome;
     }
 
@@ -86,10 +68,15 @@ public class Curso {
     }
 
     public void setCodigo(String codigo) {
-        if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do curso é obrigatório."); 
-        }
         this.codigo = codigo;
+    }
+
+    public Coordenador getCoordenador() {
+        return coordenador;
+    }
+
+    public void setCoordenador(Coordenador coordenador) {
+        this.coordenador = coordenador;
     }
 
     public Departamento getDepartamento() {
@@ -100,14 +87,11 @@ public class Curso {
         this.departamento = departamento;
     }
 
-    public Integer getDuracaoAnos() {
+    public int getDuracaoAnos() {
         return duracaoAnos;
     }
 
-    public void setDuracaoAnos(Integer duracaoAnos) {
-        if (duracaoAnos != null && duracaoAnos <= 0) {
-            throw new IllegalArgumentException("A duração do curso deve ser maior que zero.");
-        }
+    public void setDuracaoAnos(int duracaoAnos) {
         this.duracaoAnos = duracaoAnos;
     }
 
@@ -116,18 +100,7 @@ public class Curso {
     }
 
     public void setGrau(String grau) {
-        if (grau == null || grau.isBlank()) {
-            throw new IllegalArgumentException("O grau académico (Licenciatura, Mestrado, etc.) é obrigatório.");
-        }
         this.grau = grau;
-    }
-
-    public Coordenador getCoordenador() {
-        return coordenador;
-    }
-
-    public void setCoordenador(Coordenador coordenador) {
-        this.coordenador = coordenador;
     }
 
     @Override

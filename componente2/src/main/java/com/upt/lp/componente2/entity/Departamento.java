@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "departamento")
 public class Departamento {
@@ -14,16 +16,17 @@ public class Departamento {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "nome", nullable = false, length = 200)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 20)
+    @Column(name = "codigo", nullable = false, unique = true)
     private String codigo;
 
-    @Column(name = "descricao", length = 1000)
+    @Column(name = "descricao")
     private String descricao;
 
     @OneToMany(mappedBy = "departamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Curso> cursos = new ArrayList<>();
 
     @OneToMany(mappedBy = "departamento", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -35,19 +38,8 @@ public class Departamento {
 
     public Departamento(String nome, String codigo) {
         this();
-        validarDepartamento(nome, codigo);
-        
         this.nome = nome;
         this.codigo = codigo;
-    }
-
-    private void validarDepartamento(String nome, String codigo) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do departamento é obrigatório.");
-        }
-        if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do departamento é obrigatório.");
-        }
     }
 
     public void adicionarCurso(Curso curso) {
@@ -60,7 +52,8 @@ public class Departamento {
         coordenador.setDepartamento(this);
     }
 
-    // Getters e Setters
+    // Getters e Setters simples
+
     public String getId() {
         return id;
     }
@@ -74,9 +67,6 @@ public class Departamento {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome do departamento é obrigatório.");
-        }
         this.nome = nome;
     }
 
@@ -85,9 +75,6 @@ public class Departamento {
     }
 
     public void setCodigo(String codigo) {
-        if (codigo == null || codigo.isBlank()) {
-            throw new IllegalArgumentException("O código do departamento é obrigatório.");
-        }
         this.codigo = codigo;
     }
 

@@ -13,7 +13,7 @@ public class Documento {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "nome_empresa", nullable = false, length = 200)
+    @Column(name = "nome_empresa", nullable = false)
     private String nomeEmpresa;
 
     @Column(name = "contacto_empresa", nullable = false, length = 20)
@@ -39,31 +39,14 @@ public class Documento {
                      String objetivoEstagio,
                      Estudante estudante) {
         this();
-        validarDocumento(nomeEmpresa, contactoEmpresa, objetivoEstagio, estudante);
-        
         this.nomeEmpresa = nomeEmpresa;
         this.contactoEmpresa = contactoEmpresa;
         this.objetivoEstagio = objetivoEstagio;
         this.estudante = estudante;
     }
 
-    private void validarDocumento(String nomeEmpresa, String contactoEmpresa, 
-                                 String objetivoEstagio, Estudante estudante) {
-        if (nomeEmpresa == null || nomeEmpresa.isBlank()) {
-            throw new IllegalArgumentException("Nome da empresa é obrigatório.");
-        }
-        if (contactoEmpresa == null || contactoEmpresa.isBlank()) {
-            throw new IllegalArgumentException("Contacto da empresa é obrigatório.");
-        }
-        if (objetivoEstagio == null || objetivoEstagio.isBlank()) {
-            throw new IllegalArgumentException("Objetivo do estágio é obrigatório.");
-        }
-        if (estudante == null) {
-            throw new IllegalArgumentException("Estudante é obrigatório.");
-        }
-    }
+    // Getters e Setters simples (sem validações)
 
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -77,9 +60,6 @@ public class Documento {
     }
 
     public void setNomeEmpresa(String nomeEmpresa) {
-        if (nomeEmpresa == null || nomeEmpresa.isBlank()) {
-            throw new IllegalArgumentException("Nome da empresa é obrigatório.");
-        }
         this.nomeEmpresa = nomeEmpresa;
     }
 
@@ -88,9 +68,6 @@ public class Documento {
     }
 
     public void setContactoEmpresa(String contactoEmpresa) {
-        if (contactoEmpresa == null || contactoEmpresa.isBlank()) {
-            throw new IllegalArgumentException("Contacto da empresa é obrigatório.");
-        }
         this.contactoEmpresa = contactoEmpresa;
     }
 
@@ -99,9 +76,6 @@ public class Documento {
     }
 
     public void setObjetivoEstagio(String objetivoEstagio) {
-        if (objetivoEstagio == null || objetivoEstagio.isBlank()) {
-            throw new IllegalArgumentException("Objetivo do estágio é obrigatório.");
-        }
         this.objetivoEstagio = objetivoEstagio;
     }
 
@@ -118,9 +92,6 @@ public class Documento {
     }
 
     public void setEstudante(Estudante estudante) {
-        if (estudante == null) {
-            throw new IllegalArgumentException("Estudante é obrigatório.");
-        }
         this.estudante = estudante;
     }
 

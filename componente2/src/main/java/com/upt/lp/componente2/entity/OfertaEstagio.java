@@ -1,7 +1,10 @@
 package com.upt.lp.componente2.entity;
 
-import com.upt.lp.componente2.enums.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.upt.lp.componente2.enums.StatusOferta;
+import com.upt.lp.componente2.enums.TipoEstagio;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +20,10 @@ public class OfertaEstagio {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "titulo", nullable = false, length = 200)
+    @Column(name = "titulo", nullable = false)
     private String titulo;
 
-    @Column(name = "descricao", length = 2000)
+    @Column(name = "descricao", length = 1000)
     private String descricao;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,8 +33,8 @@ public class OfertaEstagio {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "area_id")
     private AreaEstagio area;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coordenador_responsavel_id")
     private Coordenador coordenadorResponsavel;
 
@@ -40,16 +43,16 @@ public class OfertaEstagio {
     private Curso curso;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", length = 20)
+    @Column(name = "tipo")
     private TipoEstagio tipo;
 
-    @Column(name = "localizacao", length = 200)
+    @Column(name = "localizacao")
     private String localizacao;
 
     @Column(name = "duracao_meses")
-    private Integer duracaoMeses;
+    private int duracaoMeses;
 
-    @Column(name = "requisitos", length = 2000)
+    @Column(name = "requisitos", length = 1000)
     private String requisitos;
 
     @Column(name = "data_inicio")
@@ -62,13 +65,14 @@ public class OfertaEstagio {
     private LocalDate dataLimiteInscricao;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", length = 20)
+    @Column(name = "status")
     private StatusOferta status;
 
     @Column(name = "numero_vagas")
-    private Integer numeroVagas;
+    private int numeroVagas;
 
-    @OneToMany(mappedBy = "oferta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "oferta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<Candidatura> candidaturas = new ArrayList<>();
 
     @Column(name = "data_publicacao")
@@ -83,11 +87,12 @@ public class OfertaEstagio {
         this.dataPublicacao = LocalDateTime.now();
     }
 
-    public OfertaEstagio(String titulo, String descricao, Empresa empresa, 
-                        TipoEstagio tipo, Integer duracaoMeses) {
+    public OfertaEstagio(String titulo,
+                         String descricao,
+                         Empresa empresa,
+                         TipoEstagio tipo,
+                         int duracaoMeses) {
         this();
-        validarOferta(titulo, descricao, empresa, tipo, duracaoMeses);
-        
         this.titulo = titulo;
         this.descricao = descricao;
         this.empresa = empresa;
@@ -95,77 +100,6 @@ public class OfertaEstagio {
         this.duracaoMeses = duracaoMeses;
     }
 
-    private void validarOferta(String titulo, String descricao, Empresa empresa, 
-                              TipoEstagio tipo, Integer duracaoMeses) {
-        if (titulo == null || titulo.isBlank()) {
-            throw new IllegalArgumentException("O título é obrigatório.");
-        }
-        if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("A descrição é obrigatória.");
-        }
-        if (empresa == null) {
-            throw new IllegalArgumentException("Empresa é obrigatória.");
-        }
-        if (tipo == null) {
-            throw new IllegalArgumentException("Tipo de estágio é obrigatório.");
-        }
-        if (duracaoMeses != null && duracaoMeses <= 0) {
-            throw new IllegalArgumentException("A duração deve ser maior que 0 meses.");
-        }
-    }
-
-    public void aprovar() {
-        this.status = StatusOferta.APROVADO;
-        this.dataAprovacao = LocalDateTime.now();
-    }
-
-    public void rejeitar() {
-        this.status = StatusOferta.REJEITADO;
-    }
-
-    public void encerrar() {
-        this.status = StatusOferta.ENCERRADO;
-    }
-
-    public void adicionarCandidatura(Candidatura candidatura) {
-        if (this.status != StatusOferta.APROVADO) {
-            throw new IllegalStateException("Não é possível candidatar-se a uma oferta não aprovada");
-        }
-
-        if (this.dataLimiteInscricao != null && 
-            LocalDate.now().isAfter(this.dataLimiteInscricao)) {
-            throw new IllegalStateException("Prazo para candidatura expirou!");
-        }
-
-        this.candidaturas.add(candidatura);
-        candidatura.setOferta(this);
-    }
-
-    public boolean estaDisponivel() {
-        try {
-            LocalDate hoje = LocalDate.now();
-            
-            if (dataInicio == null && dataFim == null) {
-                return true;
-            }
-            
-            if (dataInicio == null) {
-                return !hoje.isAfter(dataFim);
-            }
-            
-            if (dataFim == null) {
-                return !hoje.isBefore(dataInicio);
-            }
-            
-            return !hoje.isBefore(dataInicio) && !hoje.isAfter(dataFim);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Getters e setters
     public String getId() {
         return id;
     }
@@ -179,9 +113,6 @@ public class OfertaEstagio {
     }
 
     public void setTitulo(String titulo) {
-        if (titulo == null || titulo.isBlank()) {
-            throw new IllegalArgumentException("O título é obrigatório.");
-        }
         this.titulo = titulo;
     }
 
@@ -190,9 +121,6 @@ public class OfertaEstagio {
     }
 
     public void setDescricao(String descricao) {
-        if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("A descrição é obrigatória.");
-        }
         this.descricao = descricao;
     }
 
@@ -201,9 +129,6 @@ public class OfertaEstagio {
     }
 
     public void setEmpresa(Empresa empresa) {
-        if (empresa == null) {
-            throw new IllegalArgumentException("Empresa é obrigatória.");
-        }
         this.empresa = empresa;
     }
 
@@ -213,6 +138,14 @@ public class OfertaEstagio {
 
     public void setArea(AreaEstagio area) {
         this.area = area;
+    }
+
+    public Coordenador getCoordenadorResponsavel() {
+        return coordenadorResponsavel;
+    }
+
+    public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) {
+        this.coordenadorResponsavel = coordenadorResponsavel;
     }
 
     public Curso getCurso() {
@@ -228,9 +161,6 @@ public class OfertaEstagio {
     }
 
     public void setTipo(TipoEstagio tipo) {
-        if (tipo == null) {
-            throw new IllegalArgumentException("Tipo de estágio é obrigatório.");
-        }
         this.tipo = tipo;
     }
 
@@ -242,14 +172,11 @@ public class OfertaEstagio {
         this.localizacao = localizacao;
     }
 
-    public Integer getDuracaoMeses() {
+    public int getDuracaoMeses() {
         return duracaoMeses;
     }
 
-    public void setDuracaoMeses(Integer duracaoMeses) {
-        if (duracaoMeses != null && duracaoMeses <= 0) {
-            throw new IllegalArgumentException("A duração deve ser maior que 0 meses.");
-        }
+    public void setDuracaoMeses(int duracaoMeses) {
         this.duracaoMeses = duracaoMeses;
     }
 
@@ -293,11 +220,11 @@ public class OfertaEstagio {
         this.status = status;
     }
 
-    public Integer getNumeroVagas() {
+    public int getNumeroVagas() {
         return numeroVagas;
     }
 
-    public void setNumeroVagas(Integer numeroVagas) {
+    public void setNumeroVagas(int numeroVagas) {
         this.numeroVagas = numeroVagas;
     }
 
@@ -324,14 +251,6 @@ public class OfertaEstagio {
     public void setDataAprovacao(LocalDateTime dataAprovacao) {
         this.dataAprovacao = dataAprovacao;
     }
-    
-    public Coordenador getCoordenadorResponsavel() {
-        return coordenadorResponsavel;
-    }
-
-    public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) {
-        this.coordenadorResponsavel = coordenadorResponsavel;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -354,7 +273,7 @@ public class OfertaEstagio {
                 ", empresa=" + (empresa != null ? empresa.getNome() : "N/A") +
                 ", tipo=" + tipo +
                 ", status=" + status +
-                ", candidaturas=" + candidaturas.size() +
+                ", candidaturas=" + (candidaturas != null ? candidaturas.size() : 0) +
                 '}';
     }
 }

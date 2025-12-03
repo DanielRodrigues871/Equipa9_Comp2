@@ -1,6 +1,5 @@
 package com.upt.lp.componente2.entity;
 
-import com.upt.lp.componente2.security.NifUtils;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,43 +7,46 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "empresa")
 public class Empresa {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "nome", nullable = false, length = 200)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "nif", unique = true, length = 9)
+    @Column(name = "nif", unique = true)
     private String nif;
 
-    @Column(name = "morada", length = 500)
+    @Column(name = "morada")
     private String morada;
 
-    @Column(name = "telefone", length = 20)
+    @Column(name = "telefone")
     private String telefone;
 
-    @Column(name = "email", length = 150)
+    @Column(name = "email")
     private String email;
 
-    @Column(name = "website", length = 200)
+    @Column(name = "website")
     private String website;
 
-    @Column(name = "descricao", length = 2000)
+    @Column(name = "descricao")
     private String descricao;
 
     @Column(name = "ativa")
-    private Boolean ativa;
+    private boolean ativa;
 
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<RepresentanteEmpresa> representantes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonIgnore
     private List<OfertaEstagio> ofertasSubmetidas = new ArrayList<>();
 
     @Column(name = "data_criacao")
@@ -58,37 +60,12 @@ public class Empresa {
 
     public Empresa(String nome, String nif, String email, String morada) {
         this();
-        validarEmpresa(nome, nif, email);
-        
         this.nome = nome;
         this.nif = nif;
         this.email = email;
         this.morada = morada;
     }
 
-    private void validarEmpresa(String nome, String nif, String email) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome da empresa é obrigatório.");
-        }
-        if (!NifUtils.isNifValido(nif)) {
-            throw new IllegalArgumentException("NIF inválido!");
-        }
-        if (email != null && (!email.contains("@") || !email.matches(".*\\.[a-zA-Z]{2,}$"))) {
-            throw new IllegalArgumentException("Email inválido! Deve conter '@' e terminar com um domínio (.pt, .com, etc)");
-        }
-    }
-
-    public void adicionarRepresentante(RepresentanteEmpresa representante) {
-        this.representantes.add(representante);
-        representante.setEmpresa(this);
-    }
-
-    public void submeterOferta(OfertaEstagio oferta) {
-        this.ofertasSubmetidas.add(oferta);
-        oferta.setEmpresa(this);
-    }
-
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -102,9 +79,6 @@ public class Empresa {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome da empresa é obrigatório.");
-        }
         this.nome = nome;
     }
 
@@ -113,9 +87,6 @@ public class Empresa {
     }
 
     public void setNif(String nif) {
-        if (!NifUtils.isNifValido(nif)) {
-            throw new IllegalArgumentException("NIF inválido!");
-        }
         this.nif = nif;
     }
 
@@ -140,9 +111,6 @@ public class Empresa {
     }
 
     public void setEmail(String email) {
-        if (email != null && (!email.contains("@") || !email.matches(".*\\.[a-zA-Z]{2,}$"))) {
-            throw new IllegalArgumentException("Email inválido! Deve conter '@' e terminar com um domínio (.pt, .com, etc)");
-        }
         this.email = email;
     }
 
@@ -162,11 +130,11 @@ public class Empresa {
         this.descricao = descricao;
     }
 
-    public Boolean getAtiva() {
+    public boolean isAtiva() {
         return ativa;
     }
 
-    public void setAtiva(Boolean ativa) {
+    public void setAtiva(boolean ativa) {
         this.ativa = ativa;
     }
 

@@ -2,6 +2,7 @@ package com.upt.lp.componente2.entity;
 
 import com.upt.lp.componente2.enums.StatusCandidatura;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,23 +15,23 @@ public class Candidatura {
     @Column(name = "id", length = 36)
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "estudante_id", nullable = false)
     private Estudante estudante;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "coordenador_responsavel_id")
     private Coordenador coordenadorResponsavel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "oferta_id", nullable = false)
     private OfertaEstagio oferta;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false)
     private StatusCandidatura status;
 
-    @Column(name = "carta_motivacao", length = 2000)
+    @Column(name = "carta_motivacao")
     private String cartaMotivacao;
 
     @Column(name = "data_submissao", nullable = false)
@@ -39,7 +40,7 @@ public class Candidatura {
     @Column(name = "data_analise")
     private LocalDateTime dataAnalise;
 
-    @Column(name = "observacoes", length = 1000)
+    @Column(name = "observacoes")
     private String observacoes;
 
     public Candidatura() {
@@ -48,28 +49,13 @@ public class Candidatura {
         this.dataSubmissao = LocalDateTime.now();
     }
 
-    public Candidatura(Estudante estudante, OfertaEstagio oferta, String cartaMotivacao) {
+    public Candidatura(Estudante estudante,
+                       OfertaEstagio oferta,
+                       String cartaMotivacao) {
         this();
-        validarCandidatura(estudante, oferta, cartaMotivacao);
-        
         this.estudante = estudante;
         this.oferta = oferta;
         this.cartaMotivacao = cartaMotivacao;
-    }
-
-    private void validarCandidatura(Estudante estudante, OfertaEstagio oferta, String cartaMotivacao) {
-        if (estudante == null) {
-            throw new IllegalArgumentException("Estudante obrigatório.");
-        }
-        if (oferta == null) {
-            throw new IllegalArgumentException("Oferta obrigatória.");
-        }
-        if (cartaMotivacao == null || cartaMotivacao.isBlank()) {
-            throw new IllegalArgumentException("Deves submeter uma carta de motivação.");
-        }
-        if (cartaMotivacao.length() < 50) {
-            throw new IllegalArgumentException("A carta de motivação deve ter pelo menos 50 caracteres.");
-        }
     }
 
     public void colocarEmAnalise() {
@@ -88,7 +74,6 @@ public class Candidatura {
         this.observacoes = observacoes;
     }
 
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -102,10 +87,15 @@ public class Candidatura {
     }
 
     public void setEstudante(Estudante estudante) {
-        if (estudante == null) {
-            throw new IllegalArgumentException("Estudante obrigatório.");
-        }
         this.estudante = estudante;
+    }
+
+    public Coordenador getCoordenadorResponsavel() {
+        return coordenadorResponsavel;
+    }
+
+    public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) {
+        this.coordenadorResponsavel = coordenadorResponsavel;
     }
 
     public OfertaEstagio getOferta() {
@@ -113,9 +103,6 @@ public class Candidatura {
     }
 
     public void setOferta(OfertaEstagio oferta) {
-        if (oferta == null) {
-            throw new IllegalArgumentException("Oferta obrigatória.");
-        }
         this.oferta = oferta;
     }
 
@@ -132,12 +119,6 @@ public class Candidatura {
     }
 
     public void setCartaMotivacao(String cartaMotivacao) {
-        if (cartaMotivacao == null || cartaMotivacao.isBlank()) {
-            throw new IllegalArgumentException("Deves submeter uma carta de motivação.");
-        }
-        if (cartaMotivacao.length() < 50) {
-            throw new IllegalArgumentException("A carta de motivação deve ter pelo menos 50 caracteres.");
-        }
         this.cartaMotivacao = cartaMotivacao;
     }
 
@@ -163,14 +144,6 @@ public class Candidatura {
 
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
-    }
-
-    public Coordenador getCoordenadorResponsavel() {
-        return coordenadorResponsavel;
-    }
-
-    public void setCoordenadorResponsavel(Coordenador coordenadorResponsavel) {
-        this.coordenadorResponsavel = coordenadorResponsavel;
     }
 
     @Override

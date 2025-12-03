@@ -4,48 +4,47 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "proposta_estagio")
 public class PropostaEstagio {
 
     @Id
-    @Column(name = "id", length = 36)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "titulo", nullable = false, length = 200)
+    @Column(name = "titulo", nullable = false)
     private String titulo;
 
-    @Column(name = "descricao", length = 2000)
+    @Column(name = "descricao", length = 1000)
     private String descricao;
 
-    @Column(name = "requisitos", length = 2000)
+    @Column(name = "requisitos", length = 1000)
     private String requisitos;
 
-    @Column(name = "beneficios", length = 2000)
+    @Column(name = "beneficios", length = 1000)
     private String beneficios;
 
-    @Column(name = "localizacao", length = 200)
+    @Column(name = "localizacao")
     private String localizacao;
 
     @Column(name = "duracao_meses")
-    private Integer duracaoMeses;
+    private int duracaoMeses;
 
     @Column(name = "remunerado")
-    private Boolean remunerado;
+    private boolean remunerado;
 
     @Column(name = "valor_remuneracao")
-    private Double valorRemuneracao;
+    private double valorRemuneracao;
 
     @Column(name = "vagas_disponiveis")
-    private Integer vagasDisponiveis;
+    private int vagasDisponiveis;
 
-    @Column(name = "tipo", length = 20)
-    private String tipo;
+    @Column(name = "tipo")
+    private String tipo; // CURRICULAR, EXTRA_CURRICULAR
 
-    @Column(name = "status", length = 20)
-    private String status;
+    @Column(name = "status")
+    private String status; // PENDENTE, APROVADA, REJEITADA, EXPIRADA
 
     @Column(name = "data_proposta")
     private LocalDate dataProposta;
@@ -60,25 +59,25 @@ public class PropostaEstagio {
 
     @ManyToMany
     @JoinTable(
-        name = "proposta_area",
-        joinColumns = @JoinColumn(name = "proposta_id"),
-        inverseJoinColumns = @JoinColumn(name = "area_id")
+            name = "proposta_area",
+            joinColumns = @JoinColumn(name = "proposta_id"),
+            inverseJoinColumns = @JoinColumn(name = "area_id")
     )
     private List<AreaEstagio> areas = new ArrayList<>();
 
     public PropostaEstagio() {
-        this.id = UUID.randomUUID().toString();
-        this.status = "PENDENTE";
-        this.dataProposta = LocalDate.now();
-        this.remunerado = false;
     }
 
-    public PropostaEstagio(String titulo, String descricao, String requisitos, String localizacao, 
-                          Integer duracaoMeses, Boolean remunerado, Integer vagasDisponiveis, 
-                          String tipo, Empresa empresa, RepresentanteEmpresa representante) {
-        this();
-        validarProposta(titulo, descricao, duracaoMeses, vagasDisponiveis, tipo, empresa, representante);
-        
+    public PropostaEstagio(String titulo,
+                           String descricao,
+                           String requisitos,
+                           String localizacao,
+                           int duracaoMeses,
+                           boolean remunerado,
+                           int vagasDisponiveis,
+                           String tipo,
+                           Empresa empresa,
+                           RepresentanteEmpresa representante) {
         this.titulo = titulo;
         this.descricao = descricao;
         this.requisitos = requisitos;
@@ -89,40 +88,15 @@ public class PropostaEstagio {
         this.tipo = tipo;
         this.empresa = empresa;
         this.representante = representante;
+        this.status = "PENDENTE";
+        this.dataProposta = LocalDate.now();
     }
 
-    private void validarProposta(String titulo, String descricao, Integer duracaoMeses,
-                               Integer vagasDisponiveis, String tipo, Empresa empresa,
-                               RepresentanteEmpresa representante) {
-        if (titulo == null || titulo.isBlank()) {
-            throw new IllegalArgumentException("O título é obrigatório.");
-        }
-        if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("A descrição é obrigatória.");
-        }
-        if (duracaoMeses != null && duracaoMeses <= 0) {
-            throw new IllegalArgumentException("A duração tem de ser maior que zero.");
-        }
-        if (vagasDisponiveis != null && vagasDisponiveis <= 0) {
-            throw new IllegalArgumentException("O número de vagas tem de ser maior que zero.");
-        }
-        if (tipo == null || (!tipo.equals("CURRICULAR") && !tipo.equals("EXTRA_CURRICULAR"))) {
-            throw new IllegalArgumentException("O tipo deve ser 'CURRICULAR' ou 'EXTRA_CURRICULAR'.");
-        }
-        if (empresa == null) {
-            throw new IllegalArgumentException("A empresa é obrigatória.");
-        }
-        if (representante == null) {
-            throw new IllegalArgumentException("O representante da empresa é obrigatório.");
-        }
-    }
-
-    // Getters e setters
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -131,9 +105,6 @@ public class PropostaEstagio {
     }
 
     public void setTitulo(String titulo) {
-        if (titulo == null || titulo.isBlank()) {
-            throw new IllegalArgumentException("O título é obrigatório.");
-        }
         this.titulo = titulo;
     }
 
@@ -142,9 +113,6 @@ public class PropostaEstagio {
     }
 
     public void setDescricao(String descricao) {
-        if (descricao == null || descricao.isBlank()) {
-            throw new IllegalArgumentException("A descrição é obrigatória.");
-        }
         this.descricao = descricao;
     }
 
@@ -172,41 +140,35 @@ public class PropostaEstagio {
         this.localizacao = localizacao;
     }
 
-    public Integer getDuracaoMeses() {
+    public int getDuracaoMeses() {
         return duracaoMeses;
     }
 
-    public void setDuracaoMeses(Integer duracaoMeses) {
-        if (duracaoMeses != null && duracaoMeses <= 0) {
-            throw new IllegalArgumentException("A duração tem de ser maior que zero.");
-        }
+    public void setDuracaoMeses(int duracaoMeses) {
         this.duracaoMeses = duracaoMeses;
     }
 
-    public Boolean getRemunerado() {
+    public boolean isRemunerado() {
         return remunerado;
     }
 
-    public void setRemunerado(Boolean remunerado) {
+    public void setRemunerado(boolean remunerado) {
         this.remunerado = remunerado;
     }
 
-    public Double getValorRemuneracao() {
+    public double getValorRemuneracao() {
         return valorRemuneracao;
     }
 
-    public void setValorRemuneracao(Double valorRemuneracao) {
+    public void setValorRemuneracao(double valorRemuneracao) {
         this.valorRemuneracao = valorRemuneracao;
     }
 
-    public Integer getVagasDisponiveis() {
+    public int getVagasDisponiveis() {
         return vagasDisponiveis;
     }
 
-    public void setVagasDisponiveis(Integer vagasDisponiveis) {
-        if (vagasDisponiveis != null && vagasDisponiveis <= 0) {
-            throw new IllegalArgumentException("O número de vagas tem de ser maior que zero.");
-        }
+    public void setVagasDisponiveis(int vagasDisponiveis) {
         this.vagasDisponiveis = vagasDisponiveis;
     }
 
@@ -215,9 +177,6 @@ public class PropostaEstagio {
     }
 
     public void setTipo(String tipo) {
-        if (tipo == null || (!tipo.equals("CURRICULAR") && !tipo.equals("EXTRA_CURRICULAR"))) {
-            throw new IllegalArgumentException("O tipo deve ser 'CURRICULAR' ou 'EXTRA_CURRICULAR'.");
-        }
         this.tipo = tipo;
     }
 
@@ -242,9 +201,6 @@ public class PropostaEstagio {
     }
 
     public void setEmpresa(Empresa empresa) {
-        if (empresa == null) {
-            throw new IllegalArgumentException("A empresa é obrigatória.");
-        }
         this.empresa = empresa;
     }
 
@@ -253,9 +209,6 @@ public class PropostaEstagio {
     }
 
     public void setRepresentante(RepresentanteEmpresa representante) {
-        if (representante == null) {
-            throw new IllegalArgumentException("O representante da empresa é obrigatório.");
-        }
         this.representante = representante;
     }
 
@@ -267,46 +220,12 @@ public class PropostaEstagio {
         this.areas = areas;
     }
 
-    public void adicionarArea(AreaEstagio area) {
-        if (area != null) {
-            this.areas.add(area);
-        }
-    }
-
-    public void aprovar() {
-        this.status = "APROVADA";
-    }
-
-    public void rejeitar() {
-        this.status = "REJEITADA";
-    }
-
-    public boolean isPendente() {
-        return "PENDENTE".equals(this.status);
-    }
-
-    public boolean isAprovada() {
-        return "APROVADA".equals(this.status);
-    }
-
     @Override
     public String toString() {
         return "PropostaEstagio{" +
-                "id='" + id + '\'' +
+                "id=" + id +
                 ", titulo='" + titulo + '\'' +
-                ", descricao='" + descricao + '\'' +
-                ", requisitos='" + requisitos + '\'' +
-                ", beneficios='" + beneficios + '\'' +
-                ", localizacao='" + localizacao + '\'' +
-                ", duracaoMeses=" + duracaoMeses +
-                ", remunerado=" + remunerado +
-                ", valorRemuneracao=" + valorRemuneracao +
-                ", vagasDisponiveis=" + vagasDisponiveis +
-                ", tipo='" + tipo + '\'' +
                 ", status='" + status + '\'' +
-                ", dataProposta=" + dataProposta +
-                ", empresa=" + (empresa != null ? empresa.getNome() : "N/A") +
-                ", representante=" + (representante != null ? representante.getNome() : "N/A") +
                 '}';
     }
 }

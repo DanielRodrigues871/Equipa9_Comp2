@@ -34,13 +34,13 @@ public class Estagio {
     @Column(name = "data_fim")
     private LocalDate dataFim;
 
-    @Column(name = "estado_final", length = 20)
-    private String estadoFinal;
+    @Column(name = "estado_final")
+    private String estadoFinal; // EM_CURSO, CONCLUIDO, CANCELADO
 
-    @Column(name = "nota_final", length = 10)
+    @Column(name = "nota_final")
     private String notaFinal;
 
-    @Column(name = "observacoes", length = 1000)
+    @Column(name = "observacoes")
     private String observacoes;
 
     public Estagio() {
@@ -50,39 +50,13 @@ public class Estagio {
 
     public Estagio(Estudante estudante, OfertaEstagio oferta, LocalDate dataInicio) {
         this();
-        validarEstagio(estudante, oferta, dataInicio);
-        
         this.estudante = estudante;
         this.oferta = oferta;
-        this.curso = estudante.getCurso();
-        this.empresa = oferta.getEmpresa();
+        this.curso = estudante != null ? estudante.getCurso() : null;
+        this.empresa = oferta != null ? oferta.getEmpresa() : null;
         this.dataInicio = dataInicio;
     }
 
-    private void validarEstagio(Estudante estudante, OfertaEstagio oferta, LocalDate dataInicio) {
-        if (estudante == null) {
-            throw new IllegalArgumentException("O estudante é obrigatório.");
-        }
-        if (oferta == null) {
-            throw new IllegalArgumentException("A oferta é obrigatória.");
-        }
-        if (dataInicio == null) {
-            throw new IllegalArgumentException("A data de início é obrigatória.");
-        }
-    }
-
-    public void concluir(String notaFinal, LocalDate dataFim) {
-        this.estadoFinal = "CONCLUIDO";
-        this.notaFinal = notaFinal;
-        this.dataFim = dataFim;
-    }
-
-    public void cancelar(String observacoes) {
-        this.estadoFinal = "CANCELADO";
-        this.observacoes = observacoes;
-    }
-
-    // Getters e Setters
     public String getId() {
         return id;
     }
@@ -96,9 +70,6 @@ public class Estagio {
     }
 
     public void setEstudante(Estudante estudante) {
-        if (estudante == null) {
-            throw new IllegalArgumentException("O estudante é obrigatório.");
-        }
         this.estudante = estudante;
     }
 
@@ -107,9 +78,6 @@ public class Estagio {
     }
 
     public void setOferta(OfertaEstagio oferta) {
-        if (oferta == null) {
-            throw new IllegalArgumentException("A oferta é obrigatória.");
-        }
         this.oferta = oferta;
     }
 
@@ -134,9 +102,6 @@ public class Estagio {
     }
 
     public void setDataInicio(LocalDate dataInicio) {
-        if (dataInicio == null) {
-            throw new IllegalArgumentException("A data de início é obrigatória.");
-        }
         this.dataInicio = dataInicio;
     }
 
@@ -176,9 +141,6 @@ public class Estagio {
     public String toString() {
         return "Estagio{" +
                 "id='" + id + '\'' +
-                ", estudante=" + (estudante != null ? estudante.getNome() : "N/A") +
-                ", empresa=" + (empresa != null ? empresa.getNome() : "N/A") +
-                ", curso=" + (curso != null ? curso.getNome() : "N/A") +
                 ", estado=" + estadoFinal +
                 ", dataInicio=" + dataInicio +
                 ", dataFim=" + dataFim +

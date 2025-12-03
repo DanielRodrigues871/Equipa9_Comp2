@@ -12,10 +12,10 @@ public class AreaEstagio {
     @Column(name = "id", length = 36)
     private String id;
 
-    @Column(name = "nome", nullable = false, unique = true)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "descricao", length = 500)
+    @Column(name = "descricao")
     private String descricao;
 
     public AreaEstagio() {
@@ -24,14 +24,10 @@ public class AreaEstagio {
 
     public AreaEstagio(String nome, String descricao) {
         this();
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome da área é obrigatório.");
-        }
         this.nome = nome;
         this.descricao = descricao;
     }
 
-    // Getters e setters
     public String getId() {
         return id;
     }
@@ -45,12 +41,9 @@ public class AreaEstagio {
     }
 
     public void setNome(String nome) {
-        if (nome == null || nome.isBlank()) {
-            throw new IllegalArgumentException("O nome da área é obrigatório.");
-        }
         this.nome = nome;
     }
-    
+
     public String getDescricao() {
         return descricao;
     }
