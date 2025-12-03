@@ -1,65 +1,55 @@
 package com.upt.lp.componente2.mapper;
 
 import com.upt.lp.componente2.dto.EstudanteDTO;
+import com.upt.lp.componente2.entity.Curso;
 import com.upt.lp.componente2.entity.Estudante;
 
-import java.util.stream.Collectors;
+public final class EstudanteMapper {
 
-public class EstudanteMapper {
-    
-    public static EstudanteDTO toDTO(Estudante estudante) {
-        if (estudante == null) return null;
-        
-        EstudanteDTO dto = new EstudanteDTO(
-            estudante.getId(),
-            estudante.getNome(),
-            estudante.getEmail(),
-            estudante.getDataCriacao(),
-            estudante.getDataAtualizacao(),
-            estudante.getNumeroEstudante(),
-            estudante.getAnoMatricula()
-        );
-        
-        dto.setMedia(estudante.getMedia());
-        dto.setCompetencias(estudante.getCompetencias());
-        
-        // Mapear relacionamentos
-        if (estudante.getCurso() != null) {
-            dto.setCursoId(estudante.getCurso().getId().toString());
-            dto.setCursoNome(estudante.getCurso().getNome());
+    private EstudanteMapper() {
+    }
+
+    public static EstudanteDTO toDTO(Estudante entity) {
+        if (entity == null) {
+            return null;
         }
-        
-        if (estudante.getCandidaturas() != null) {
-            dto.setCandidaturasIds(estudante.getCandidaturas().stream()
-                .map(candidatura -> candidatura.getId().toString())
-                .collect(Collectors.toList()));
+
+        EstudanteDTO dto = new EstudanteDTO();
+        dto.setId(entity.getId());
+        dto.setNome(entity.getNome());
+        dto.setEmail(entity.getEmail());
+        dto.setNumeroEstudante(entity.getNumeroEstudante());
+        dto.setAnoMatricula(entity.getAnoMatricula());
+        dto.setMedia(entity.getMedia());
+        dto.setCompetencias(entity.getCompetencias());
+        dto.setDataCriacao(entity.getDataCriacao());
+        dto.setDataAtualizacao(entity.getDataAtualizacao());
+
+        Curso curso = entity.getCurso();
+        if (curso != null) {
+            dto.setCursoId(curso.getId());
+            dto.setCursoNome(curso.getNome());
         }
-        
-        if (estudante.getDocumentos() != null) {
-            dto.setDocumentosIds(estudante.getDocumentos().stream()
-                .map(documento -> documento.getId().toString())
-                .collect(Collectors.toList()));
-        }
-        
+
         return dto;
     }
-    
+
+    // Para criação/actualização a partir do DTO
+    // O Curso em si é carregado no service com cursoRepository.findById(dto.getCursoId())
     public static Estudante toEntity(EstudanteDTO dto) {
-        if (dto == null) return null;
-        
-        Estudante estudante = new Estudante();
-        estudante.setId(dto.getId());
-        estudante.setNome(dto.getNome());
-        estudante.setEmail(dto.getEmail());
-        estudante.setNumeroEstudante(dto.getNumeroEstudante());
-        estudante.setAnoMatricula(dto.getAnoMatricula());
-        estudante.setMedia(dto.getMedia());
-        
-        if (dto.getCompetencias() != null) {
-            estudante.setCompetencias(dto.getCompetencias());
+        if (dto == null) {
+            return null;
         }
-        
-        // Curso será definido no Service
-        return estudante;
+
+        Estudante e = new Estudante();
+        e.setNome(dto.getNome());
+        e.setEmail(dto.getEmail());
+        e.setPassword(null); // password vem num DTO específico ou no body separado
+        e.setNumeroEstudante(dto.getNumeroEstudante());
+        e.setAnoMatricula(dto.getAnoMatricula());
+        e.setMedia(dto.getMedia());
+        e.setCompetencias(dto.getCompetencias());
+
+        return e;
     }
 }

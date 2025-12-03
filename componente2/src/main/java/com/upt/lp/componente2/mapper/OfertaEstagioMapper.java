@@ -1,76 +1,82 @@
 package com.upt.lp.componente2.mapper;
 
 import com.upt.lp.componente2.dto.OfertaEstagioDTO;
-import com.upt.lp.componente2.entity.OfertaEstagio;
-import java.util.stream.Collectors;
+import com.upt.lp.componente2.entity.*;
 
-public class OfertaEstagioMapper {
-    
-    public static OfertaEstagioDTO toDTO(OfertaEstagio oferta) {
-        if (oferta == null) return null;
-        
-        OfertaEstagioDTO dto = new OfertaEstagioDTO(
-            oferta.getId(),
-            oferta.getTitulo(),
-            oferta.getDescricao(),
-            oferta.getEmpresa() != null ? oferta.getEmpresa().getId() : null,
-            oferta.getEmpresa() != null ? oferta.getEmpresa().getNome() : null,
-            oferta.getTipo()
-        );
-        
-        if (oferta.getArea() != null) {
-            dto.setAreaId(oferta.getArea().getId());
-            dto.setAreaNome(oferta.getArea().getNome());
+public final class OfertaEstagioMapper {
+
+    private OfertaEstagioMapper() {
+    }
+
+    public static OfertaEstagioDTO toDTO(OfertaEstagio entity) {
+        if (entity == null) {
+            return null;
         }
-        
-        if (oferta.getCoordenadorResponsavel() != null) {
-            dto.setCoordenadorResponsavelId(oferta.getCoordenadorResponsavel().getId());
-            dto.setCoordenadorResponsavelNome(oferta.getCoordenadorResponsavel().getNome());
+
+        OfertaEstagioDTO dto = new OfertaEstagioDTO();
+        dto.setId(entity.getId());
+        dto.setTitulo(entity.getTitulo());
+        dto.setDescricao(entity.getDescricao());
+        dto.setTipo(entity.getTipo());
+        dto.setLocalizacao(entity.getLocalizacao());
+        dto.setDuracaoMeses(entity.getDuracaoMeses());
+        dto.setRequisitos(entity.getRequisitos());
+        dto.setDataInicio(entity.getDataInicio());
+        dto.setDataFim(entity.getDataFim());
+        dto.setDataLimiteInscricao(entity.getDataLimiteInscricao());
+        dto.setStatus(entity.getStatus());
+        dto.setNumeroVagas(entity.getNumeroVagas());
+        dto.setDataPublicacao(entity.getDataPublicacao());
+        dto.setDataAprovacao(entity.getDataAprovacao());
+
+        Empresa emp = entity.getEmpresa();
+        if (emp != null) {
+            dto.setEmpresaId(emp.getId());
+            dto.setEmpresaNome(emp.getNome());
         }
-        
-        if (oferta.getCurso() != null) {
-            dto.setCursoId(oferta.getCurso().getId());
-            dto.setCursoNome(oferta.getCurso().getNome());
+
+        AreaEstagio area = entity.getArea();
+        if (area != null) {
+            dto.setAreaId(area.getId());
+            dto.setAreaNome(area.getNome());
         }
-        
-        dto.setLocalizacao(oferta.getLocalizacao());
-        dto.setDuracaoMeses(oferta.getDuracaoMeses());
-        dto.setRequisitos(oferta.getRequisitos());
-        dto.setDataInicio(oferta.getDataInicio());
-        dto.setDataFim(oferta.getDataFim());
-        dto.setDataLimiteInscricao(oferta.getDataLimiteInscricao());
-        dto.setStatus(oferta.getStatus());
-        dto.setNumeroVagas(oferta.getNumeroVagas());
-        dto.setDataPublicacao(oferta.getDataPublicacao());
-        dto.setDataAprovacao(oferta.getDataAprovacao());
-        
-        if (oferta.getCandidaturas() != null) {
-            dto.setNumeroCandidaturas(oferta.getCandidaturas().size());
+
+        Curso curso = entity.getCurso();
+        if (curso != null) {
+            dto.setCursoId(curso.getId());
+            dto.setCursoNome(curso.getNome());
         }
-        
+
+        Coordenador coord = entity.getCoordenadorResponsavel();
+        if (coord != null) {
+            dto.setCoordenadorResponsavelId(coord.getId());
+            dto.setCoordenadorResponsavelNome(coord.getNome());
+        }
+
+        if (entity.getCandidaturas() != null) {
+            dto.setNumeroCandidaturas(entity.getCandidaturas().size());
+        }
+
         return dto;
     }
-    
+
     public static OfertaEstagio toEntity(OfertaEstagioDTO dto) {
-        if (dto == null) return null;
-        
-        OfertaEstagio oferta = new OfertaEstagio();
-        oferta.setId(dto.getId());
-        oferta.setTitulo(dto.getTitulo());
-        oferta.setDescricao(dto.getDescricao());
-        oferta.setTipo(dto.getTipo());
-        oferta.setLocalizacao(dto.getLocalizacao());
-        oferta.setDuracaoMeses(dto.getDuracaoMeses());
-        oferta.setRequisitos(dto.getRequisitos());
-        oferta.setDataInicio(dto.getDataInicio());
-        oferta.setDataFim(dto.getDataFim());
-        oferta.setDataLimiteInscricao(dto.getDataLimiteInscricao());
-        oferta.setStatus(dto.getStatus());
-        oferta.setNumeroVagas(dto.getNumeroVagas());
-        oferta.setDataPublicacao(dto.getDataPublicacao());
-        oferta.setDataAprovacao(dto.getDataAprovacao());
-        
-        // Empresa, Area, Coordenador e Curso serão definidos no Service
-        return oferta;
+        if (dto == null) {
+            return null;
+        }
+
+        OfertaEstagio o = new OfertaEstagio();
+        o.setTitulo(dto.getTitulo());
+        o.setDescricao(dto.getDescricao());
+        o.setTipo(dto.getTipo());
+        o.setLocalizacao(dto.getLocalizacao());
+        o.setDuracaoMeses(dto.getDuracaoMeses());
+        o.setRequisitos(dto.getRequisitos());
+        o.setDataInicio(dto.getDataInicio());
+        o.setDataFim(dto.getDataFim());
+        o.setDataLimiteInscricao(dto.getDataLimiteInscricao());
+        o.setNumeroVagas(dto.getNumeroVagas());
+        // empresa, area, curso, coordenador são ligados no service
+        return o;
     }
 }

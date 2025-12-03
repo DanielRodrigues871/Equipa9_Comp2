@@ -1,52 +1,61 @@
 package com.upt.lp.componente2.mapper;
 
 import com.upt.lp.componente2.dto.EstagioDTO;
-import com.upt.lp.componente2.entity.Estagio;
+import com.upt.lp.componente2.entity.*;
 
-public class EstagioMapper {
-    
-    public static EstagioDTO toDTO(Estagio estagio) {
-        if (estagio == null) return null;
-        
-        EstagioDTO dto = new EstagioDTO(
-            estagio.getId(),
-            estagio.getEstudante() != null ? estagio.getEstudante().getId() : null,
-            estagio.getEstudante() != null ? estagio.getEstudante().getNome() : null,
-            estagio.getOferta() != null ? estagio.getOferta().getId() : null,
-            estagio.getOferta() != null ? estagio.getOferta().getTitulo() : null
-        );
-        
-        if (estagio.getCurso() != null) {
-            dto.setCursoId(estagio.getCurso().getId());
-            dto.setCursoNome(estagio.getCurso().getNome());
+public final class EstagioMapper {
+
+    private EstagioMapper() {
+    }
+
+    public static EstagioDTO toDTO(Estagio entity) {
+        if (entity == null) return null;
+
+        EstagioDTO dto = new EstagioDTO();
+        dto.setId(entity.getId());
+        dto.setDataInicio(entity.getDataInicio());
+        dto.setDataFim(entity.getDataFim());
+        dto.setEstadoFinal(entity.getEstadoFinal());
+        dto.setNotaFinal(entity.getNotaFinal());
+        dto.setObservacoes(entity.getObservacoes());
+
+        Estudante est = entity.getEstudante();
+        if (est != null) {
+            dto.setEstudanteId(est.getId());
+            dto.setEstudanteNome(est.getNome());
         }
-        
-        if (estagio.getEmpresa() != null) {
-            dto.setEmpresaId(estagio.getEmpresa().getId());
-            dto.setEmpresaNome(estagio.getEmpresa().getNome());
+
+        OfertaEstagio oferta = entity.getOferta();
+        if (oferta != null) {
+            dto.setOfertaId(oferta.getId());
+            dto.setOfertaTitulo(oferta.getTitulo());
         }
-        
-        dto.setDataInicio(estagio.getDataInicio());
-        dto.setDataFim(estagio.getDataFim());
-        dto.setEstadoFinal(estagio.getEstadoFinal());
-        dto.setNotaFinal(estagio.getNotaFinal());
-        dto.setObservacoes(estagio.getObservacoes());
-        
+
+        Curso curso = entity.getCurso();
+        if (curso != null) {
+            dto.setCursoId(curso.getId());
+            dto.setCursoNome(curso.getNome());
+        }
+
+        Empresa emp = entity.getEmpresa();
+        if (emp != null) {
+            dto.setEmpresaId(emp.getId());
+            dto.setEmpresaNome(emp.getNome());
+        }
+
         return dto;
     }
-    
+
     public static Estagio toEntity(EstagioDTO dto) {
         if (dto == null) return null;
-        
-        Estagio estagio = new Estagio();
-        estagio.setId(dto.getId());
-        // Estudante, Oferta, Curso e Empresa serão definidos no Service
-        estagio.setDataInicio(dto.getDataInicio());
-        estagio.setDataFim(dto.getDataFim());
-        estagio.setEstadoFinal(dto.getEstadoFinal());
-        estagio.setNotaFinal(dto.getNotaFinal());
-        estagio.setObservacoes(dto.getObservacoes());
-        
-        return estagio;
+
+        Estagio e = new Estagio();
+        e.setDataInicio(dto.getDataInicio());
+        e.setDataFim(dto.getDataFim());
+        e.setEstadoFinal(dto.getEstadoFinal());
+        e.setNotaFinal(dto.getNotaFinal());
+        e.setObservacoes(dto.getObservacoes());
+        // estudante, oferta, curso, empresa são ligados no service
+        return e;
     }
 }

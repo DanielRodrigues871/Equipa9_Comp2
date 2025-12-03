@@ -1,74 +1,76 @@
 package com.upt.lp.componente2.mapper;
 
 import com.upt.lp.componente2.dto.PropostaEstagioDTO;
-import com.upt.lp.componente2.entity.PropostaEstagio;
+import com.upt.lp.componente2.entity.*;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class PropostaEstagioMapper {
-    
-    public static PropostaEstagioDTO toDTO(PropostaEstagio proposta) {
-        if (proposta == null) return null;
-        
-        PropostaEstagioDTO dto = new PropostaEstagioDTO(
-            proposta.getId() != null ? Long.parseLong(proposta.getId()) : null, // Converter String para Long
-            proposta.getTitulo(),
-            proposta.getDescricao(),
-            proposta.getLocalizacao(),
-            proposta.getDuracaoMeses(),
-            proposta.getRemunerado(), // CORRIGIDO: usar getRemunerado()
-            proposta.getVagasDisponiveis(),
-            proposta.getTipo()
-        );
-        
-        dto.setRequisitos(proposta.getRequisitos());
-        dto.setBeneficios(proposta.getBeneficios());
-        dto.setValorRemuneracao(proposta.getValorRemuneracao());
-        dto.setStatus(proposta.getStatus());
-        dto.setDataProposta(proposta.getDataProposta());
-        
-        if (proposta.getEmpresa() != null) {
-            dto.setEmpresaId(proposta.getEmpresa().getId());
-            dto.setEmpresaNome(proposta.getEmpresa().getNome());
+public final class PropostaEstagioMapper {
+
+    private PropostaEstagioMapper() {
+    }
+
+    public static PropostaEstagioDTO toDTO(PropostaEstagio entity) {
+        if (entity == null) return null;
+
+        PropostaEstagioDTO dto = new PropostaEstagioDTO();
+        dto.setId(entity.getId());
+        dto.setTitulo(entity.getTitulo());
+        dto.setDescricao(entity.getDescricao());
+        dto.setRequisitos(entity.getRequisitos());
+        dto.setBeneficios(entity.getBeneficios());
+        dto.setLocalizacao(entity.getLocalizacao());
+        dto.setDuracaoMeses(entity.getDuracaoMeses());
+        dto.setRemunerado(entity.isRemunerado());
+        dto.setValorRemuneracao(entity.getValorRemuneracao());
+        dto.setVagasDisponiveis(entity.getVagasDisponiveis());
+        dto.setTipo(entity.getTipo());
+        dto.setStatus(entity.getStatus());
+        dto.setDataProposta(entity.getDataProposta());
+
+        Empresa emp = entity.getEmpresa();
+        if (emp != null) {
+            dto.setEmpresaId(null); 
+            dto.setEmpresaNome(emp.getNome());
         }
-        
-        if (proposta.getRepresentante() != null) {
-            dto.setRepresentanteId(proposta.getRepresentante().getId());
-            dto.setRepresentanteNome(proposta.getRepresentante().getNome());
+
+        RepresentanteEmpresa rep = entity.getRepresentante();
+        if (rep != null) {
+            dto.setRepresentanteId(rep.getId());
+            dto.setRepresentanteNome(rep.getNome());
         }
-        
-        if (proposta.getAreas() != null) {
-            dto.setAreasIds(proposta.getAreas().stream()
-                .map(area -> area.getId())
-                .collect(Collectors.toList()));
-            
-            dto.setAreasNomes(proposta.getAreas().stream()
-                .map(area -> area.getNome())
-                .collect(Collectors.toList()));
+
+        List<AreaEstagio> areas = entity.getAreas();
+        if (areas != null && !areas.isEmpty()) {
+            dto.setAreasIds(
+                    areas.stream().map(AreaEstagio::getId).collect(Collectors.toList())
+            );
+            dto.setAreasNomes(
+                    areas.stream().map(AreaEstagio::getNome).collect(Collectors.toList())
+            );
         }
-        
+
         return dto;
     }
-    
+
     public static PropostaEstagio toEntity(PropostaEstagioDTO dto) {
         if (dto == null) return null;
-        
-        PropostaEstagio proposta = new PropostaEstagio();
-        // CORRIGIDO: Converter Long para String
-        proposta.setId(dto.getId() != null ? dto.getId().toString() : null);
-        proposta.setTitulo(dto.getTitulo());
-        proposta.setDescricao(dto.getDescricao());
-        proposta.setRequisitos(dto.getRequisitos());
-        proposta.setBeneficios(dto.getBeneficios());
-        proposta.setLocalizacao(dto.getLocalizacao());
-        proposta.setDuracaoMeses(dto.getDuracaoMeses());
-        proposta.setRemunerado(dto.isRemunerado()); // CORRIGIDO: usar isRemunerado() para DTO
-        proposta.setValorRemuneracao(dto.getValorRemuneracao());
-        proposta.setVagasDisponiveis(dto.getVagasDisponiveis());
-        proposta.setTipo(dto.getTipo());
-        proposta.setStatus(dto.getStatus());
-        proposta.setDataProposta(dto.getDataProposta());
-        
-        // Empresa, Representante e Areas serão definidos no Service
-        return proposta;
+
+        PropostaEstagio p = new PropostaEstagio();
+        p.setTitulo(dto.getTitulo());
+        p.setDescricao(dto.getDescricao());
+        p.setRequisitos(dto.getRequisitos());
+        p.setBeneficios(dto.getBeneficios());
+        p.setLocalizacao(dto.getLocalizacao());
+        p.setDuracaoMeses(dto.getDuracaoMeses());
+        p.setRemunerado(dto.isRemunerado());
+        p.setValorRemuneracao(dto.getValorRemuneracao());
+        p.setVagasDisponiveis(dto.getVagasDisponiveis());
+        p.setTipo(dto.getTipo());
+        p.setStatus(dto.getStatus());
+        p.setDataProposta(dto.getDataProposta());
+        // empresa, representante e áreas são ligados no service
+        return p;
     }
 }

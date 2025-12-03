@@ -4,54 +4,41 @@ import com.upt.lp.componente2.dto.CoordenadorDTO;
 import com.upt.lp.componente2.entity.Coordenador;
 import com.upt.lp.componente2.entity.Departamento;
 
-import java.util.stream.Collectors;
+public final class CoordenadorMapper {
 
-public class CoordenadorMapper {
-    
-    public static CoordenadorDTO toDTO(Coordenador coordenador) {
-        if (coordenador == null) return null;
-        
-        CoordenadorDTO dto = new CoordenadorDTO(
-            coordenador.getId(),
-            coordenador.getNome(),
-            coordenador.getEmail(),
-            coordenador.getDataCriacao(),
-            coordenador.getDataAtualizacao(),
-            coordenador.getDepartamento() != null ? coordenador.getDepartamento().getId() : null,
-            coordenador.getDepartamento() != null ? coordenador.getDepartamento().getNome() : null
-        );
-        
-        // Mapear listas de IDs
-        if (coordenador.getCursosGeridos() != null) {
-            dto.setCursosGeridosIds(coordenador.getCursosGeridos().stream()
-                .map(curso -> curso.getId().toString())
-                .collect(Collectors.toList()));
+    private CoordenadorMapper() {
+    }
+
+    public static CoordenadorDTO toDTO(Coordenador entity) {
+        if (entity == null) {
+            return null;
         }
-        
-        if (coordenador.getOfertasRegistadas() != null) {
-            dto.setOfertasRegistadasIds(coordenador.getOfertasRegistadas().stream()
-                .map(oferta -> oferta.getId().toString())
-                .collect(Collectors.toList()));
+
+        CoordenadorDTO dto = new CoordenadorDTO();
+        dto.setId(entity.getId());
+        dto.setNome(entity.getNome());
+        dto.setEmail(entity.getEmail());
+        dto.setDataCriacao(entity.getDataCriacao());
+        dto.setDataAtualizacao(entity.getDataAtualizacao());
+
+        Departamento dep = entity.getDepartamento();
+        if (dep != null) {
+            dto.setDepartamentoId(dep.getId());
+            dto.setDepartamentoNome(dep.getNome());
         }
-        
-        if (coordenador.getCandidaturasGeridas() != null) {
-            dto.setCandidaturasGeridasIds(coordenador.getCandidaturasGeridas().stream()
-                .map(candidatura -> candidatura.getId().toString())
-                .collect(Collectors.toList()));
-        }
-        
+
         return dto;
     }
-    
+
     public static Coordenador toEntity(CoordenadorDTO dto) {
-        if (dto == null) return null;
-        
-        Coordenador coordenador = new Coordenador();
-        coordenador.setId(dto.getId());
-        coordenador.setNome(dto.getNome());
-        coordenador.setEmail(dto.getEmail());
-        
-        // Departamento será definido no Service
-        return coordenador;
+        if (dto == null) {
+            return null;
+        }
+
+        Coordenador c = new Coordenador();
+        c.setNome(dto.getNome());
+        c.setEmail(dto.getEmail());
+        // password virá noutro DTO ou campo específico se quiseres expor
+        return c;
     }
 }
