@@ -1,95 +1,167 @@
 package com.upt.lp.componente2.service;
 
-import com.upt.lp.componente2.entity.RepresentanteEmpresa;
-import com.upt.lp.componente2.entity.Empresa;
-import com.upt.lp.componente2.repository.RepresentanteEmpresaRepository;
-import com.upt.lp.componente2.repository.EmpresaRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.upt.lp.componente2.dto.RegistoDTO;
+import com.upt.lp.componente2.entity.Empresa;
+import com.upt.lp.componente2.entity.RepresentanteEmpresa;
+import com.upt.lp.componente2.repository.EmpresaRepository;
+import com.upt.lp.componente2.repository.RepresentanteEmpresaRepository;
+import com.upt.lp.componente2.security.PasswordUtils;
 
 @Service
 public class RepresentanteEmpresaService {
-    
+
     private final RepresentanteEmpresaRepository representanteRepository;
     private final EmpresaRepository empresaRepository;
-    
-    public RepresentanteEmpresaService(RepresentanteEmpresaRepository representanteRepository, 
-                                      EmpresaRepository empresaRepository) {
+
+    public RepresentanteEmpresaService(RepresentanteEmpresaRepository representanteRepository,
+                                       EmpresaRepository empresaRepository) {
         this.representanteRepository = representanteRepository;
         this.empresaRepository = empresaRepository;
     }
-    
+
+    // CREATE
+    public RepresentanteEmpresa createRepresentante(RepresentanteEmpresa r, String empresaId) {
+        validarDadosRepresentante(r, empresaId, null);
+
+        Empresa empresa = empresaRepository.findById(empresaId).get();
+        r.setEmpresa(empresa);
+
+        // garantir hash da password se vier em texto
+        if (r.getPassword() != null && !r.getPassword().isBlank()) {
+            r.setPassword(PasswordUtils.hashPassword(r.getPassword()));
+        }
+
+        return representanteRepository.save(r);
+    }
+
+    // READ all
     public List<RepresentanteEmpresa> getAllRepresentantes() {
         return representanteRepository.findAll();
     }
-    
+
+    // READ by id
     public RepresentanteEmpresa getRepresentanteById(String id) {
         return representanteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Representante não encontrado com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Representante não encontrado."));
     }
-    
-    public RepresentanteEmpresa getRepresentanteByEmail(String email) {
-        return representanteRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Representante não encontrado com email: " + email));
-    }
-    
-    public RepresentanteEmpresa createRepresentante(RepresentanteEmpresa representante, String empresaId) {
-        // Verificar se email já existe
-        if (representanteRepository.existsByEmail(representante.getEmail())) {
-            throw new RuntimeException("Já existe um representante com o email: " + representante.getEmail());
-        }
-        
-        // Buscar e validar empresa
-        if (empresaId != null) {
-            Empresa empresa = empresaRepository.findById(empresaId)
-                    .orElseThrow(() -> new RuntimeException("Empresa não encontrada com ID: " + empresaId));
-            representante.setEmpresa(empresa);
-        }
-        
-        return representanteRepository.save(representante);
-    }
-    
-    public RepresentanteEmpresa updateRepresentante(String id, RepresentanteEmpresa representanteAtualizado) {
-        RepresentanteEmpresa representanteExistente = getRepresentanteById(id);
-        
-        // Verificar se o novo email já existe (se foi alterado)
-        if (!representanteExistente.getEmail().equals(representanteAtualizado.getEmail()) && 
-            representanteRepository.existsByEmail(representanteAtualizado.getEmail())) {
-            throw new RuntimeException("Já existe um representante com o email: " + representanteAtualizado.getEmail());
-        }
-        
-        representanteExistente.setNome(representanteAtualizado.getNome());
-        representanteExistente.setEmail(representanteAtualizado.getEmail());
-        representanteExistente.setCargo(representanteAtualizado.getCargo());
-        representanteExistente.setTelefone(representanteAtualizado.getTelefone());
-        
-        // Atualizar empresa se fornecida
-        if (representanteAtualizado.getEmpresa() != null) {
-            representanteExistente.setEmpresa(representanteAtualizado.getEmpresa());
-        }
-        
-        // Só atualiza a password se foi fornecida uma nova
-        if (representanteAtualizado.getPassword() != null && 
-            !representanteAtualizado.getPassword().equals(representanteExistente.getPassword())) {
-            representanteExistente.setPassword(representanteAtualizado.getPassword());
-        }
-        
-        return representanteRepository.save(representanteExistente);
-    }
-    
-    public void deleteRepresentante(String id) {
-        if (!representanteRepository.existsById(id)) {
-            throw new RuntimeException("Representante não encontrado com ID: " + id);
-        }
-        representanteRepository.deleteById(id);
-    }
-    
+
+    // READ by empresa
     public List<RepresentanteEmpresa> getRepresentantesByEmpresa(String empresaId) {
         return representanteRepository.findByEmpresaId(empresaId);
     }
-    
-    public List<RepresentanteEmpresa> getRepresentantesByCargo(String cargo) {
-        return representanteRepository.findByCargo(cargo);
+
+    // UPDATE
+    public RepresentanteEmpresa updateRepresentante(String id, RepresentanteEmpresa dados, String empresaId) {
+        RepresentanteEmpresa existente = getRepresentanteById(id);
+
+        validarDadosRepresentante(dados, empresaId, id);
+
+        Empresa empresa = empresaRepository.findById(empresaId).get();
+
+        existente.setNome(dados.getNome());
+        existente.setEmail(dados.getEmail());
+
+        if (dados.getPassword() != null && !dados.getPassword().isBlank()) {
+            existente.setPassword(PasswordUtils.hashPassword(dados.getPassword()));
+        }
+
+        existente.setCargo(dados.getCargo());
+        existente.setTelefone(dados.getTelefone());
+        existente.setEmpresa(empresa);
+
+        return representanteRepository.save(existente);
+    }
+
+    // DELETE
+    public void deleteRepresentante(String id) {
+        RepresentanteEmpresa r = getRepresentanteById(id);
+        // aqui podes pôr regras de negócio antes de apagar (ex.: ofertas associadas)
+        representanteRepository.delete(r);
+    }
+
+    // CREATE a partir do registo (AuthService)
+    public RepresentanteEmpresa createFromRegister(RegistoDTO dto) {
+        if (dto.getPassword() == null) {
+            throw new IllegalArgumentException("Password é obrigatória.");
+        }
+        if (dto.getCargo() == null || dto.getCargo().isBlank()) {
+            throw new IllegalArgumentException("O cargo é obrigatório.");
+        }
+
+        String hashed = PasswordUtils.hashPassword(dto.getPassword());
+
+        Empresa emp = empresaRepository.findById(dto.getEmpresaId())
+                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada."));
+
+        RepresentanteEmpresa r = new RepresentanteEmpresa();
+        r.setNome(dto.getNome());
+        r.setEmail(dto.getEmail());
+        r.setPassword(hashed);
+        r.setCargo(dto.getCargo());
+        r.setTelefone(dto.getTelefone());
+        r.setEmpresa(emp);
+
+        return representanteRepository.save(r);
+    }
+
+
+    // =========================
+    //   MÉTODO DE VALIDAÇÃO
+    // =========================
+    private void validarDadosRepresentante(RepresentanteEmpresa r, String empresaId, String idAtual) {
+        if (r == null) {
+            throw new IllegalArgumentException("Representante não pode ser nulo.");
+        }
+
+        // Nome
+        if (r.getNome() == null || r.getNome().isBlank()) {
+            throw new IllegalArgumentException("O nome é obrigatório.");
+        }
+
+        // Email
+        if (r.getEmail() == null || r.getEmail().isBlank() || !r.getEmail().contains("@")) {
+            throw new IllegalArgumentException("O email é obrigatório e deve ser válido.");
+        }
+
+        // Password forte se fornecida neste fluxo
+        if (r.getPassword() != null) {
+            PasswordUtils.validarPasswordForte(r.getPassword());
+        }
+
+        // Cargo
+        if (r.getCargo() == null || r.getCargo().isBlank()) {
+            throw new IllegalArgumentException("O cargo é obrigatório.");
+        }
+
+        // Telefone opcional mas validado se existir
+        if (r.getTelefone() != null && !r.getTelefone().isBlank()) {
+            String tel = r.getTelefone().replaceAll("\\s+", "");
+            if (!tel.matches("^(251\\d{6}|9\\d{8})$")) {
+                throw new IllegalArgumentException(
+                        "O telefone deve ter 9 dígitos e começar por 251 ou por 9.");
+            }
+        }
+
+        // Empresa obrigatória e existente
+        if (empresaId == null || empresaId.isBlank()) {
+            throw new IllegalArgumentException("A empresa é obrigatória.");
+        }
+        if (!empresaRepository.existsById(empresaId)) {
+            throw new IllegalArgumentException("A empresa indicada não existe.");
+        }
+
+        // Unicidade do email
+        Optional<RepresentanteEmpresa> existenteEmail =
+                representanteRepository.findByEmail(r.getEmail());
+
+        if (existenteEmail.isPresent()
+                && (idAtual == null || !existenteEmail.get().getId().equals(idAtual))) {
+            throw new IllegalArgumentException("Já existe um representante com esse email.");
+        }
     }
 }

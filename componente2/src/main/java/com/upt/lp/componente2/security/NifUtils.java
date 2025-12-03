@@ -1,30 +1,32 @@
 package com.upt.lp.componente2.security;
 
 public class NifUtils {
-    
+
+    /**
+     * Valida se o NIF português fornecido é válido.
+     * 
+     * @param nif String com 9 dígitos
+     * @return true se for válido, false se não
+     */
     public static boolean isNifValido(String nif) {
-        if (nif == null || nif.length() != 9 || !nif.matches("\\d+")) {
+        if (nif == null || !nif.matches("\\d{9}")) {
             return false;
         }
-        
-        int[] nifArray = new int[9];
-        for (int i = 0; i < 9; i++) {
-            nifArray[i] = Character.getNumericValue(nif.charAt(i));
+        int soma = 0;
+        for (int i = 0; i < 8; i++) {
+            soma += Character.getNumericValue(nif.charAt(i)) * (9 - i);
         }
-        
-        int soma = nifArray[0]*9 + nifArray[1]*8 + nifArray[2]*7 + 
-                   nifArray[3]*6 + nifArray[4]*5 + nifArray[5]*4 + 
-                   nifArray[6]*3 + nifArray[7]*2;
-        
-        int resto = soma % 11;
-        int digitoControlo;
-        
-        if (resto == 0 || resto == 1) {
-            digitoControlo = 0;
-        } else {
-            digitoControlo = 11 - resto;
+        int digitoVerificador = 11 - (soma % 11);
+        if (digitoVerificador >= 10) {
+            digitoVerificador = 0;
         }
-        
-        return digitoControlo == nifArray[8];
+        return digitoVerificador == Character.getNumericValue(nif.charAt(8));
+    }
+
+    // Opcional: Método que lança exceção se inválido
+    public static void validarNifOuExcecao(String nif) {
+        if (!isNifValido(nif)) {
+            throw new IllegalArgumentException("NIF inválido!");
+        }
     }
 }

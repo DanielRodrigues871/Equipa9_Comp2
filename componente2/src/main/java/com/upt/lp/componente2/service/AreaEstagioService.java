@@ -1,60 +1,73 @@
 package com.upt.lp.componente2.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.upt.lp.componente2.entity.AreaEstagio;
 import com.upt.lp.componente2.repository.AreaEstagioRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class AreaEstagioService {
-    
+
     private final AreaEstagioRepository areaRepository;
-    
+
     public AreaEstagioService(AreaEstagioRepository areaRepository) {
         this.areaRepository = areaRepository;
     }
-    
+
+    // CREATE
+    public AreaEstagio createArea(AreaEstagio a) {
+        validarDadosArea(a, null);
+        return areaRepository.save(a);
+    }
+
+    // READ todos
     public List<AreaEstagio> getAllAreas() {
         return areaRepository.findAll();
     }
-    
+
+    // READ por id
     public AreaEstagio getAreaById(String id) {
         return areaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Área não encontrada com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Área de estágio não encontrada."));
     }
-    
-    public AreaEstagio createArea(AreaEstagio area) {
-        // Verificar se nome já existe
-        if (areaRepository.findByNome(area.getNome()).isPresent()) {
-            throw new RuntimeException("Já existe uma área com o nome: " + area.getNome());
-        }
-        
-        return areaRepository.save(area);
+
+    // UPDATE
+    public AreaEstagio updateArea(String id, AreaEstagio dados) {
+        AreaEstagio existente = getAreaById(id);
+
+        validarDadosArea(dados, id);
+
+        existente.setNome(dados.getNome());
+        existente.setDescricao(dados.getDescricao());
+
+        return areaRepository.save(existente);
     }
-    
-    public AreaEstagio updateArea(String id, AreaEstagio areaAtualizada) {
-        AreaEstagio areaExistente = getAreaById(id);
-        
-        // Verificar se o novo nome já existe (se foi alterado)
-        if (!areaExistente.getNome().equals(areaAtualizada.getNome()) && 
-            areaRepository.findByNome(areaAtualizada.getNome()).isPresent()) {
-            throw new RuntimeException("Já existe uma área com o nome: " + areaAtualizada.getNome());
-        }
-        
-        areaExistente.setNome(areaAtualizada.getNome());
-        areaExistente.setDescricao(areaAtualizada.getDescricao());
-        
-        return areaRepository.save(areaExistente);
-    }
-    
+
+    // DELETE
     public void deleteArea(String id) {
-        if (!areaRepository.existsById(id)) {
-            throw new RuntimeException("Área não encontrada com ID: " + id);
-        }
-        areaRepository.deleteById(id);
+        AreaEstagio a = getAreaById(id);
+        areaRepository.delete(a);
     }
-    
-    public List<AreaEstagio> searchAreasByNome(String nome) {
-        return areaRepository.findByNomeContainingIgnoreCase(nome);
+
+    // =========================
+    //   MÉTODO DE VALIDAÇÃO
+    // =========================
+    private void validarDadosArea(AreaEstagio a, String idAtual) {
+        if (a == null) {
+            throw new IllegalArgumentException("Área de estágio não pode ser nula.");
+        }
+
+        if (a.getNome() == null || a.getNome().isBlank()) {
+            throw new IllegalArgumentException("O nome da área de estágio é obrigatório.");
+        }
+
+        Optional<AreaEstagio> existenteNome = areaRepository.findByNome(a.getNome());
+        if (existenteNome.isPresent()
+                && (idAtual == null || !existenteNome.get().getId().equals(idAtual))) {
+            throw new IllegalArgumentException("Já existe uma área de estágio com esse nome.");
+        }
     }
 }

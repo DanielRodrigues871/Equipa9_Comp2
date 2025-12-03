@@ -1,117 +1,183 @@
 package com.upt.lp.componente2.service;
 
-import com.upt.lp.componente2.entity.Estudante;
-import com.upt.lp.componente2.entity.Curso;
-import com.upt.lp.componente2.repository.EstudanteRepository;
-import com.upt.lp.componente2.repository.CursoRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.upt.lp.componente2.dto.RegistoDTO;
+import com.upt.lp.componente2.entity.Curso;
+import com.upt.lp.componente2.entity.Estudante;
+import com.upt.lp.componente2.repository.CursoRepository;
+import com.upt.lp.componente2.repository.EstudanteRepository;
+import com.upt.lp.componente2.security.PasswordUtils;
 
 @Service
 public class EstudanteService {
-    
+
     private final EstudanteRepository estudanteRepository;
     private final CursoRepository cursoRepository;
-    
-    public EstudanteService(EstudanteRepository estudanteRepository, 
-                           CursoRepository cursoRepository) {
+
+    public EstudanteService(EstudanteRepository estudanteRepository,
+                            CursoRepository cursoRepository) {
         this.estudanteRepository = estudanteRepository;
         this.cursoRepository = cursoRepository;
     }
-    
+
+    // CREATE
+    public Estudante createEstudante(Estudante e, String cursoId) {
+        validarDadosEstudante(e, cursoId, null);
+
+        // curso já foi validado em validarDadosEstudante
+        Curso curso = cursoRepository.findById(cursoId).get();
+        e.setCurso(curso);
+
+        // garantir que a password vai encriptada
+        if (e.getPassword() != null) {
+            e.setPassword(PasswordUtils.hashPassword(e.getPassword()));
+        }
+
+        return estudanteRepository.save(e);
+    }
+
+    // READ todos
     public List<Estudante> getAllEstudantes() {
         return estudanteRepository.findAll();
     }
-    
+
+    // READ por id
     public Estudante getEstudanteById(String id) {
         return estudanteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Estudante não encontrado."));
     }
-    
-    public Estudante getEstudanteByEmail(String email) {
-        return estudanteRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com email: " + email));
+
+    // UPDATE
+    public Estudante updateEstudante(String id, Estudante dados, String cursoId) {
+        Estudante existente = getEstudanteById(id);
+
+        validarDadosEstudante(dados, cursoId, id);
+
+        Curso curso = cursoRepository.findById(cursoId).get();
+
+        existente.setNome(dados.getNome());
+        existente.setEmail(dados.getEmail());
+
+        if (dados.getPassword() != null && !dados.getPassword().isBlank()) {
+            existente.setPassword(PasswordUtils.hashPassword(dados.getPassword()));
+        }
+
+        existente.setNumeroEstudante(dados.getNumeroEstudante());
+        existente.setAnoMatricula(dados.getAnoMatricula());
+        existente.setMedia(dados.getMedia());
+        existente.setCurso(curso);
+        existente.setCompetencias(dados.getCompetencias());
+
+        return estudanteRepository.save(existente);
     }
-    
-    public Estudante getEstudanteByNumeroEstudante(String numeroEstudante) {
-        return estudanteRepository.findByNumeroEstudante(numeroEstudante)
-                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com número: " + numeroEstudante));
-    }
-    
-    public Estudante createEstudante(Estudante estudante, String cursoId) {
-        // Verificar se email já existe
-        if (estudanteRepository.existsByEmail(estudante.getEmail())) {
-            throw new RuntimeException("Já existe um estudante com o email: " + estudante.getEmail());
-        }
-        
-        // Verificar se número de estudante já existe
-        if (estudanteRepository.existsByNumeroEstudante(estudante.getNumeroEstudante())) {
-            throw new RuntimeException("Já existe um estudante com o número: " + estudante.getNumeroEstudante());
-        }
-        
-        // Buscar e validar curso
-        if (cursoId != null) {
-            Curso curso = cursoRepository.findById(cursoId)
-                    .orElseThrow(() -> new RuntimeException("Curso não encontrado com ID: " + cursoId));
-            estudante.setCurso(curso);
-        }
-        
-        return estudanteRepository.save(estudante);
-    }
-    
-    public Estudante updateEstudante(String id, Estudante estudanteAtualizado) {
-        Estudante estudanteExistente = getEstudanteById(id);
-        
-        // Verificar se o novo email já existe (se foi alterado)
-        if (!estudanteExistente.getEmail().equals(estudanteAtualizado.getEmail()) && 
-            estudanteRepository.existsByEmail(estudanteAtualizado.getEmail())) {
-            throw new RuntimeException("Já existe um estudante com o email: " + estudanteAtualizado.getEmail());
-        }
-        
-        // Verificar se o novo número de estudante já existe (se foi alterado)
-        if (!estudanteExistente.getNumeroEstudante().equals(estudanteAtualizado.getNumeroEstudante()) && 
-            estudanteRepository.existsByNumeroEstudante(estudanteAtualizado.getNumeroEstudante())) {
-            throw new RuntimeException("Já existe um estudante com o número: " + estudanteAtualizado.getNumeroEstudante());
-        }
-        
-        estudanteExistente.setNome(estudanteAtualizado.getNome());
-        estudanteExistente.setEmail(estudanteAtualizado.getEmail());
-        estudanteExistente.setNumeroEstudante(estudanteAtualizado.getNumeroEstudante());
-        estudanteExistente.setAnoMatricula(estudanteAtualizado.getAnoMatricula());
-        estudanteExistente.setMedia(estudanteAtualizado.getMedia());
-        
-        // Atualizar curso se fornecido
-        if (estudanteAtualizado.getCurso() != null) {
-            estudanteExistente.setCurso(estudanteAtualizado.getCurso());
-        }
-        
-        // Atualizar competências se fornecidas
-        if (estudanteAtualizado.getCompetencias() != null) {
-            estudanteExistente.setCompetencias(estudanteAtualizado.getCompetencias());
-        }
-        
-        // Só atualiza a password se foi fornecida uma nova
-        if (estudanteAtualizado.getPassword() != null && 
-            !estudanteAtualizado.getPassword().equals(estudanteExistente.getPassword())) {
-            estudanteExistente.setPassword(estudanteAtualizado.getPassword());
-        }
-        
-        return estudanteRepository.save(estudanteExistente);
-    }
-    
+
+    // DELETE
     public void deleteEstudante(String id) {
-        if (!estudanteRepository.existsById(id)) {
-            throw new RuntimeException("Estudante não encontrado com ID: " + id);
+        Estudante e = getEstudanteById(id);
+        // aqui podes adicionar regras (ex.: não apagar se tiver candidaturas ativas)
+        estudanteRepository.delete(e);
+    }
+
+    // Estudantes com média >= 9.5
+    public List<Estudante> getEstudantesComMediaMaiorQue9_5() {
+        return estudanteRepository.findByMediaGreaterThanEqual(9.5);
+    }
+
+    // CREATE a partir do registo (AuthService)
+    public Estudante createFromRegister(RegistoDTO dto) {
+        if (dto.getPassword() == null) {
+            throw new IllegalArgumentException("Password é obrigatória.");
         }
-        estudanteRepository.deleteById(id);
+        if (dto.getNumeroEstudante() == null || !dto.getNumeroEstudante().matches("\\d{5}")) {
+            throw new IllegalArgumentException("O número de estudante deve ter exatamente 5 dígitos numéricos.");
+        }
+        if (dto.getAnoMatricula() == null || dto.getAnoMatricula() < 1) {
+            throw new IllegalArgumentException("O ano de matrícula deve ser maior ou igual a 1.");
+        }
+
+        String hashed = PasswordUtils.hashPassword(dto.getPassword());
+
+        Curso curso = cursoRepository.findById(dto.getCursoId())
+                .orElseThrow(() -> new IllegalArgumentException("Curso não encontrado."));
+
+        Estudante e = new Estudante();
+        e.setNome(dto.getNome());
+        e.setEmail(dto.getEmail());
+        e.setPassword(hashed);
+        e.setCurso(curso);
+        e.setNumeroEstudante(dto.getNumeroEstudante());
+        e.setAnoMatricula(dto.getAnoMatricula());
+        e.setMedia(0.0);
+        e.setCompetencias(new ArrayList<>());
+
+        return estudanteRepository.save(e);
     }
-    
-    public List<Estudante> getEstudantesByCurso(String cursoId) {
-        return estudanteRepository.findByCursoId(cursoId);
-    }
-    
-    public List<Estudante> getEstudantesByAnoMatricula(int anoMatricula) {
-        return estudanteRepository.findByAnoMatricula(anoMatricula);
+
+
+    // =========================
+    //   MÉTODO DE VALIDAÇÃO
+    // =========================
+    private void validarDadosEstudante(Estudante e, String cursoId, String idAtual) {
+        if (e == null) {
+            throw new IllegalArgumentException("Estudante não pode ser nulo.");
+        }
+
+        // Nome
+        if (e.getNome() == null || e.getNome().isBlank()) {
+            throw new IllegalArgumentException("O nome é obrigatório.");
+        }
+
+        // Email (formato simples)
+        if (e.getEmail() == null || e.getEmail().isBlank()
+                || !e.getEmail().contains("@")) {
+            throw new IllegalArgumentException("O email é obrigatório e deve ser válido.");
+        }
+
+        // Password forte (se estiver a ser fornecida neste fluxo)
+        if (e.getPassword() != null) {
+            PasswordUtils.validarPasswordForte(e.getPassword());
+        }
+
+        // Número de estudante: exatamente 5 dígitos
+        if (e.getNumeroEstudante() == null || !e.getNumeroEstudante().matches("\\d{5}")) {
+            throw new IllegalArgumentException("O número de estudante deve ter exatamente 5 dígitos numéricos.");
+        }
+
+        // Ano de matrícula >= 1
+        if (e.getAnoMatricula() < 1) {
+            throw new IllegalArgumentException("O ano de matrícula deve ser maior ou igual a 1.");
+        }
+
+        // Média entre 0 e 20
+        if (e.getMedia() < 0 || e.getMedia() > 20) {
+            throw new IllegalArgumentException("A média deve estar entre 0 e 20.");
+        }
+
+        // Curso obrigatório e existente
+        if (cursoId == null || cursoId.isBlank()) {
+            throw new IllegalArgumentException("O curso é obrigatório.");
+        }
+        if (!cursoRepository.existsById(cursoId)) {
+            throw new IllegalArgumentException("O curso indicado não existe.");
+        }
+
+        // Unicidade do email
+        Optional<Estudante> existenteEmail = estudanteRepository.findByEmail(e.getEmail());
+        if (existenteEmail.isPresent()
+                && (idAtual == null || !existenteEmail.get().getId().equals(idAtual))) {
+            throw new IllegalArgumentException("Já existe um estudante com esse email.");
+        }
+
+        // Unicidade do número de estudante
+        Optional<Estudante> existenteNumero = estudanteRepository.findByNumeroEstudante(e.getNumeroEstudante());
+        if (existenteNumero.isPresent()
+                && (idAtual == null || !existenteNumero.get().getId().equals(idAtual))) {
+            throw new IllegalArgumentException("Já existe um estudante com esse número de estudante.");
+        }
     }
 }

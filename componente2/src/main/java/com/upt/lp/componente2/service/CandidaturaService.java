@@ -1,117 +1,174 @@
 package com.upt.lp.componente2.service;
 
-import com.upt.lp.componente2.entity.Candidatura;
-import com.upt.lp.componente2.entity.Estudante;
-import com.upt.lp.componente2.entity.OfertaEstagio;
-import com.upt.lp.componente2.entity.Coordenador;
-import com.upt.lp.componente2.enums.StatusCandidatura;
-import com.upt.lp.componente2.repository.CandidaturaRepository;
-import com.upt.lp.componente2.repository.EstudanteRepository;
-import com.upt.lp.componente2.repository.OfertaEstagioRepository;
-import com.upt.lp.componente2.repository.CoordenadorRepository;
-import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+import com.upt.lp.componente2.entity.Candidatura;
+import com.upt.lp.componente2.entity.Coordenador;
+import com.upt.lp.componente2.entity.Estudante;
+import com.upt.lp.componente2.entity.OfertaEstagio;
+import com.upt.lp.componente2.enums.StatusCandidatura;
+import com.upt.lp.componente2.repository.CandidaturaRepository;
+import com.upt.lp.componente2.repository.CoordenadorRepository;
+import com.upt.lp.componente2.repository.EstudanteRepository;
+import com.upt.lp.componente2.repository.OfertaEstagioRepository;
+
 @Service
 public class CandidaturaService {
-    
+
     private final CandidaturaRepository candidaturaRepository;
     private final EstudanteRepository estudanteRepository;
-    private final OfertaEstagioRepository ofertaRepository;
+    private final OfertaEstagioRepository ofertaEstagioRepository;
     private final CoordenadorRepository coordenadorRepository;
-    
+
     public CandidaturaService(CandidaturaRepository candidaturaRepository,
-                             EstudanteRepository estudanteRepository,
-                             OfertaEstagioRepository ofertaRepository,
-                             CoordenadorRepository coordenadorRepository) {
+                              EstudanteRepository estudanteRepository,
+                              OfertaEstagioRepository ofertaEstagioRepository,
+                              CoordenadorRepository coordenadorRepository) {
         this.candidaturaRepository = candidaturaRepository;
         this.estudanteRepository = estudanteRepository;
-        this.ofertaRepository = ofertaRepository;
+        this.ofertaEstagioRepository = ofertaEstagioRepository;
         this.coordenadorRepository = coordenadorRepository;
     }
-    
+
+    // CREATE
+    public Candidatura createCandidatura(Candidatura c,
+                                         String estudanteId,
+                                         String ofertaId) {
+        validarDadosCandidatura(c, estudanteId, ofertaId);
+
+        Estudante est = estudanteRepository.findById(estudanteId)
+                .orElseThrow(() -> new IllegalArgumentException("Estudante não encontrado."));
+
+        OfertaEstagio oferta = ofertaEstagioRepository.findById(ofertaId)
+                .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
+
+        c.setEstudante(est);
+        c.setOferta(oferta);
+        c.setStatus(StatusCandidatura.SUBMETIDA);
+        c.setDataSubmissao(LocalDateTime.now());
+
+        return candidaturaRepository.save(c);
+    }
+
+    // READ todos
     public List<Candidatura> getAllCandidaturas() {
         return candidaturaRepository.findAll();
     }
-    
+
+    // READ por id
     public Candidatura getCandidaturaById(String id) {
         return candidaturaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Candidatura não encontrada com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Candidatura não encontrada."));
     }
-    
-    public Candidatura createCandidatura(String estudanteId, String ofertaId, String cartaMotivacao) {
-        // Buscar estudante
-        Estudante estudante = estudanteRepository.findById(estudanteId)
-                .orElseThrow(() -> new RuntimeException("Estudante não encontrado com ID: " + estudanteId));
-        
-        // Buscar oferta
-        OfertaEstagio oferta = ofertaRepository.findById(ofertaId)
-                .orElseThrow(() -> new RuntimeException("Oferta não encontrada com ID: " + ofertaId));
-        
-        // Verificar se estudante já se candidatou a esta oferta
-        if (!candidaturaRepository.findByEstudanteIdAndOfertaId(estudanteId, ofertaId).isEmpty()) {
-            throw new RuntimeException("O estudante já se candidatou a esta oferta");
-        }
-        
-        // Criar candidatura
-        Candidatura candidatura = new Candidatura(estudante, oferta, cartaMotivacao);
-        
-        return candidaturaRepository.save(candidatura);
-    }
-    
-    public void colocarEmAnalise(String id, String coordenadorId) {
-        Candidatura candidatura = getCandidaturaById(id);
-        
-        Coordenador coordenador = coordenadorRepository.findById(coordenadorId)
-                .orElseThrow(() -> new RuntimeException("Coordenador não encontrado com ID: " + coordenadorId));
-        
-        candidatura.colocarEmAnalise();
-        candidatura.setCoordenadorResponsavel(coordenador);
-        
-        candidaturaRepository.save(candidatura);
-    }
-    
-    public void aprovarCandidatura(String id) {
-        Candidatura candidatura = getCandidaturaById(id);
-        candidatura.aprovar();
-        candidaturaRepository.save(candidatura);
-    }
-    
-    public void rejeitarCandidatura(String id, String observacoes) {
-        Candidatura candidatura = getCandidaturaById(id);
-        candidatura.rejeitar(observacoes);
-        candidaturaRepository.save(candidatura);
-    }
-    
-    public void deleteCandidatura(String id) {
-        if (!candidaturaRepository.existsById(id)) {
-            throw new RuntimeException("Candidatura não encontrada com ID: " + id);
-        }
-        candidaturaRepository.deleteById(id);
-    }
-    
+
+    // READ por estudante
     public List<Candidatura> getCandidaturasByEstudante(String estudanteId) {
         return candidaturaRepository.findByEstudanteId(estudanteId);
     }
-    
+
+    // READ por oferta
     public List<Candidatura> getCandidaturasByOferta(String ofertaId) {
         return candidaturaRepository.findByOfertaId(ofertaId);
     }
-    
-    public List<Candidatura> getCandidaturasByCoordenador(String coordenadorId) {
-        return candidaturaRepository.findByCoordenadorResponsavelId(coordenadorId);
+
+    // UPDATE (dados base)
+    public Candidatura updateCandidatura(String id, Candidatura dados) {
+        Candidatura existente = getCandidaturaById(id);
+
+        // só permitir alteração da carta/observações aqui
+        validarCartaMotivacao(dados.getCartaMotivacao());
+        existente.setCartaMotivacao(dados.getCartaMotivacao());
+        existente.setObservacoes(dados.getObservacoes());
+
+        return candidaturaRepository.save(existente);
     }
-    
-    public List<Candidatura> getCandidaturasByStatus(StatusCandidatura status) {
-        return candidaturaRepository.findByStatus(status);
+
+    // Ações de workflow
+
+    public Candidatura colocarEmAnalise(String id, String coordenadorId) {
+        Candidatura c = getCandidaturaById(id);
+
+        Coordenador coord = coordenadorRepository.findById(coordenadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Coordenador não encontrado."));
+
+        c.colocarEmAnalise();
+        c.setCoordenadorResponsavel(coord);
+
+        return candidaturaRepository.save(c);
     }
-    
-    public long countCandidaturasByOferta(String ofertaId) {
-        return candidaturaRepository.countByOfertaId(ofertaId);
+
+    public Candidatura aprovar(String id, String coordenadorId, String observacoes) {
+        Candidatura c = getCandidaturaById(id);
+
+        Coordenador coord = coordenadorRepository.findById(coordenadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Coordenador não encontrado."));
+
+        c.aprovar();
+        c.setCoordenadorResponsavel(coord);
+        c.setObservacoes(observacoes);
+
+        return candidaturaRepository.save(c);
     }
-    
-    public long countCandidaturasByEstudante(String estudanteId) {
-        return candidaturaRepository.countByEstudanteId(estudanteId);
+
+    public Candidatura rejeitar(String id, String coordenadorId, String observacoes) {
+        Candidatura c = getCandidaturaById(id);
+
+        Coordenador coord = coordenadorRepository.findById(coordenadorId)
+                .orElseThrow(() -> new IllegalArgumentException("Coordenador não encontrado."));
+
+        if (observacoes == null || observacoes.isBlank()) {
+            throw new IllegalArgumentException("Observações são obrigatórias para rejeitar.");
+        }
+
+        c.rejeitar(observacoes);
+        c.setCoordenadorResponsavel(coord);
+
+        return candidaturaRepository.save(c);
+    }
+
+    // DELETE
+    public void deleteCandidatura(String id) {
+        Candidatura c = getCandidaturaById(id);
+        candidaturaRepository.delete(c);
+    }
+
+    // =========================
+    //   MÉTODOS DE VALIDAÇÃO
+    // =========================
+    private void validarDadosCandidatura(Candidatura c,
+                                         String estudanteId,
+                                         String ofertaId) {
+        if (c == null) {
+            throw new IllegalArgumentException("Candidatura não pode ser nula.");
+        }
+
+        if (estudanteId == null || estudanteId.isBlank()) {
+            throw new IllegalArgumentException("Estudante obrigatório.");
+        }
+        if (!estudanteRepository.existsById(estudanteId)) {
+            throw new IllegalArgumentException("Estudante indicado não existe.");
+        }
+
+        if (ofertaId == null || ofertaId.isBlank()) {
+            throw new IllegalArgumentException("Oferta obrigatória.");
+        }
+        if (!ofertaEstagioRepository.existsById(ofertaId)) {
+            throw new IllegalArgumentException("Oferta indicada não existe.");
+        }
+
+        validarCartaMotivacao(c.getCartaMotivacao());
+    }
+
+    private void validarCartaMotivacao(String carta) {
+        if (carta == null || carta.isBlank()) {
+            throw new IllegalArgumentException("Deves submeter uma carta de motivação.");
+        }
+        if (carta.length() < 50) {
+            throw new IllegalArgumentException(
+                    "A carta de motivação deve ter pelo menos 50 caracteres.");
+        }
     }
 }

@@ -1,149 +1,199 @@
 package com.upt.lp.componente2.service;
 
-import com.upt.lp.componente2.entity.PropostaEstagio;
-import com.upt.lp.componente2.entity.Empresa;
-import com.upt.lp.componente2.entity.RepresentanteEmpresa;
-import com.upt.lp.componente2.entity.AreaEstagio;
-import com.upt.lp.componente2.repository.PropostaEstagioRepository;
-import com.upt.lp.componente2.repository.EmpresaRepository;
-import com.upt.lp.componente2.repository.RepresentanteEmpresaRepository;
-import com.upt.lp.componente2.repository.AreaEstagioRepository;
-import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.upt.lp.componente2.entity.*;
+import com.upt.lp.componente2.repository.*;
 
 @Service
 public class PropostaEstagioService {
-    
+
     private final PropostaEstagioRepository propostaRepository;
     private final EmpresaRepository empresaRepository;
     private final RepresentanteEmpresaRepository representanteRepository;
     private final AreaEstagioRepository areaRepository;
-    
+
     public PropostaEstagioService(PropostaEstagioRepository propostaRepository,
-                                 EmpresaRepository empresaRepository,
-                                 RepresentanteEmpresaRepository representanteRepository,
-                                 AreaEstagioRepository areaRepository) {
+                                  EmpresaRepository empresaRepository,
+                                  RepresentanteEmpresaRepository representanteRepository,
+                                  AreaEstagioRepository areaRepository) {
         this.propostaRepository = propostaRepository;
         this.empresaRepository = empresaRepository;
         this.representanteRepository = representanteRepository;
         this.areaRepository = areaRepository;
     }
-    
+
+    // CREATE
+    public PropostaEstagio createProposta(PropostaEstagio p,
+                                          String empresaId,
+                                          String representanteId,
+                                          List<String> areasIds) {
+
+        validarDadosProposta(p, empresaId, representanteId);
+
+        Empresa emp = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada."));
+        p.setEmpresa(emp);
+
+        RepresentanteEmpresa rep = representanteRepository.findById(representanteId)
+                .orElseThrow(() -> new IllegalArgumentException("Representante não encontrado."));
+        p.setRepresentante(rep);
+
+        if (areasIds != null && !areasIds.isEmpty()) {
+            List<AreaEstagio> areas = new ArrayList<>();
+            for (String areaId : areasIds) {
+                AreaEstagio area = areaRepository.findById(areaId)
+                        .orElseThrow(() -> new IllegalArgumentException("Área não encontrada: " + areaId));
+                areas.add(area);
+            }
+            p.setAreas(areas);
+        }
+
+        p.setStatus("PENDENTE");
+        p.setDataProposta(LocalDate.now());
+
+        return propostaRepository.save(p);
+    }
+
+    // READ todos
     public List<PropostaEstagio> getAllPropostas() {
         return propostaRepository.findAll();
     }
-    
-    public PropostaEstagio getPropostaById(String id) {
+
+    // READ por id
+    public PropostaEstagio getPropostaById(Long id) {
         return propostaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Proposta não encontrada com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Proposta não encontrada."));
     }
-    
-    public PropostaEstagio createProposta(PropostaEstagio proposta, String empresaId, 
-                                         String representanteId, List<String> areasIds) {
-        // Buscar empresa
-        Empresa empresa = empresaRepository.findById(empresaId)
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada com ID: " + empresaId));
-        proposta.setEmpresa(empresa);
-        
-        // Buscar representante
-        RepresentanteEmpresa representante = representanteRepository.findById(representanteId)
-                .orElseThrow(() -> new RuntimeException("Representante não encontrado com ID: " + representanteId));
-        proposta.setRepresentante(representante);
-        
-        // Buscar áreas
-        if (areasIds != null && !areasIds.isEmpty()) {
-            List<AreaEstagio> areas = areasIds.stream()
-                .map(areaId -> areaRepository.findById(areaId)
-                    .orElseThrow(() -> new RuntimeException("Área não encontrada com ID: " + areaId)))
-                .collect(Collectors.toList());
-            proposta.setAreas(areas);
-        }
-        
-        return propostaRepository.save(proposta);
-    }
-    
-    public PropostaEstagio updateProposta(String id, PropostaEstagio propostaAtualizada) {
-        PropostaEstagio propostaExistente = getPropostaById(id);
-        
-        propostaExistente.setTitulo(propostaAtualizada.getTitulo());
-        propostaExistente.setDescricao(propostaAtualizada.getDescricao());
-        propostaExistente.setRequisitos(propostaAtualizada.getRequisitos());
-        propostaExistente.setBeneficios(propostaAtualizada.getBeneficios());
-        propostaExistente.setLocalizacao(propostaAtualizada.getLocalizacao());
-        propostaExistente.setDuracaoMeses(propostaAtualizada.getDuracaoMeses());
-        propostaExistente.setRemunerado(propostaAtualizada.getRemunerado());
-        propostaExistente.setValorRemuneracao(propostaAtualizada.getValorRemuneracao());
-        propostaExistente.setVagasDisponiveis(propostaAtualizada.getVagasDisponiveis());
-        propostaExistente.setTipo(propostaAtualizada.getTipo());
-        propostaExistente.setStatus(propostaAtualizada.getStatus());
-        
-        // Atualizar empresa se fornecida
-        if (propostaAtualizada.getEmpresa() != null) {
-            propostaExistente.setEmpresa(propostaAtualizada.getEmpresa());
-        }
-        
-        // Atualizar representante se fornecido
-        if (propostaAtualizada.getRepresentante() != null) {
-            propostaExistente.setRepresentante(propostaAtualizada.getRepresentante());
-        }
-        
-        // Atualizar áreas se fornecidas
-        if (propostaAtualizada.getAreas() != null) {
-            propostaExistente.setAreas(propostaAtualizada.getAreas());
-        }
-        
-        return propostaRepository.save(propostaExistente);
-    }
-    
-    public void aprovarProposta(String id) {
-        PropostaEstagio proposta = getPropostaById(id);
-        proposta.aprovar();
-        propostaRepository.save(proposta);
-    }
-    
-    public void rejeitarProposta(String id) {
-        PropostaEstagio proposta = getPropostaById(id);
-        proposta.rejeitar();
-        propostaRepository.save(proposta);
-    }
-    
-    public void deleteProposta(String id) {
-        if (!propostaRepository.existsById(id)) {
-            throw new RuntimeException("Proposta não encontrada com ID: " + id);
-        }
-        propostaRepository.deleteById(id);
-    }
-    
+
+    // READ por empresa
     public List<PropostaEstagio> getPropostasByEmpresa(String empresaId) {
         return propostaRepository.findByEmpresaId(empresaId);
     }
-    
+
+    // READ por representante
     public List<PropostaEstagio> getPropostasByRepresentante(String representanteId) {
         return propostaRepository.findByRepresentanteId(representanteId);
     }
-    
+
+    // READ por status
     public List<PropostaEstagio> getPropostasByStatus(String status) {
         return propostaRepository.findByStatus(status);
     }
-    
-    public List<PropostaEstagio> getPropostasByTipo(String tipo) {
-        return propostaRepository.findByTipo(tipo);
+
+    // UPDATE
+    public PropostaEstagio updateProposta(Long id,
+                                          PropostaEstagio dados,
+                                          String empresaId,
+                                          String representanteId,
+                                          List<String> areasIds) {
+
+        PropostaEstagio existente = getPropostaById(id);
+
+        validarDadosProposta(dados, empresaId, representanteId);
+
+        Empresa emp = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada."));
+        existente.setEmpresa(emp);
+
+        RepresentanteEmpresa rep = representanteRepository.findById(representanteId)
+                .orElseThrow(() -> new IllegalArgumentException("Representante não encontrado."));
+        existente.setRepresentante(rep);
+
+        if (areasIds != null) {
+            List<AreaEstagio> areas = new ArrayList<>();
+            for (String areaId : areasIds) {
+                AreaEstagio area = areaRepository.findById(areaId)
+                        .orElseThrow(() -> new IllegalArgumentException("Área não encontrada: " + areaId));
+                areas.add(area);
+            }
+            existente.setAreas(areas);
+        }
+
+        existente.setTitulo(dados.getTitulo());
+        existente.setDescricao(dados.getDescricao());
+        existente.setRequisitos(dados.getRequisitos());
+        existente.setBeneficios(dados.getBeneficios());
+        existente.setLocalizacao(dados.getLocalizacao());
+        existente.setDuracaoMeses(dados.getDuracaoMeses());
+        existente.setRemunerado(dados.isRemunerado());
+        existente.setValorRemuneracao(dados.getValorRemuneracao());
+        existente.setVagasDisponiveis(dados.getVagasDisponiveis());
+        existente.setTipo(dados.getTipo());
+
+        return propostaRepository.save(existente);
     }
-    
-    public List<PropostaEstagio> searchPropostasByTitulo(String titulo) {
-        return propostaRepository.findByTituloContainingIgnoreCase(titulo);
+
+    // WORKFLOW
+    public PropostaEstagio aprovarProposta(Long id) {
+        PropostaEstagio p = getPropostaById(id);
+        p.setStatus("APROVADA");
+        return propostaRepository.save(p);
     }
-    
-    public List<PropostaEstagio> getPropostasPendentes() {
-        return propostaRepository.findByStatus("PENDENTE");
+
+    public PropostaEstagio rejeitarProposta(Long id) {
+        PropostaEstagio p = getPropostaById(id);
+        p.setStatus("REJEITADA");
+        return propostaRepository.save(p);
     }
-    
-    public List<PropostaEstagio> getPropostasAprovadas() {
-        return propostaRepository.findByStatus("APROVADA");
+
+    // DELETE
+    public void deleteProposta(Long id) {
+        PropostaEstagio p = getPropostaById(id);
+        propostaRepository.delete(p);
     }
-    
-    public long countPropostasByStatus(String status) {
-        return propostaRepository.countByStatus(status);
+
+    // =========================
+    //   MÉTODO DE VALIDAÇÃO
+    // =========================
+    private void validarDadosProposta(PropostaEstagio p,
+                                      String empresaId,
+                                      String representanteId) {
+        if (p == null) {
+            throw new IllegalArgumentException("Proposta não pode ser nula.");
+        }
+
+        if (p.getTitulo() == null || p.getTitulo().isBlank()) {
+            throw new IllegalArgumentException("O título é obrigatório.");
+        }
+
+        if (p.getDescricao() == null || p.getDescricao().isBlank()) {
+            throw new IllegalArgumentException("A descrição é obrigatória.");
+        }
+
+        if (p.getDuracaoMeses() <= 0) {
+            throw new IllegalArgumentException("A duração tem de ser maior que zero.");
+        }
+
+        if (p.getVagasDisponiveis() <= 0) {
+            throw new IllegalArgumentException("O número de vagas tem de ser maior que zero.");
+        }
+
+        String tipo = p.getTipo();
+        if (tipo == null || (!tipo.equals("CURRICULAR") && !tipo.equals("EXTRA_CURRICULAR"))) {
+            throw new IllegalArgumentException("O tipo deve ser 'CURRICULAR' ou 'EXTRA_CURRICULAR'.");
+        }
+
+        if (empresaId == null || empresaId.isBlank()) {
+            throw new IllegalArgumentException("A empresa é obrigatória.");
+        }
+        if (!empresaRepository.existsById(empresaId)) {
+            throw new IllegalArgumentException("A empresa indicada não existe.");
+        }
+
+        if (representanteId == null || representanteId.isBlank()) {
+            throw new IllegalArgumentException("O representante da empresa é obrigatório.");
+        }
+        if (!representanteRepository.existsById(representanteId)) {
+            throw new IllegalArgumentException("O representante indicado não existe.");
+        }
+
+        if (p.isRemunerado() && p.getValorRemuneracao() <= 0) {
+            throw new IllegalArgumentException("Se o estágio for remunerado, o valor deve ser positivo.");
+        }
     }
 }

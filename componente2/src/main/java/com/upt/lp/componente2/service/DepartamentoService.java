@@ -1,61 +1,80 @@
 package com.upt.lp.componente2.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import com.upt.lp.componente2.entity.Departamento;
 import com.upt.lp.componente2.repository.DepartamentoRepository;
-import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class DepartamentoService {
-    
+
     private final DepartamentoRepository departamentoRepository;
-    
+
     public DepartamentoService(DepartamentoRepository departamentoRepository) {
         this.departamentoRepository = departamentoRepository;
     }
-    
+
+    // CREATE
+    public Departamento createDepartamento(Departamento d) {
+        validarDadosDepartamento(d, null);
+        return departamentoRepository.save(d);
+    }
+
+    // READ todos
     public List<Departamento> getAllDepartamentos() {
         return departamentoRepository.findAll();
     }
-    
+
+    // READ por id
     public Departamento getDepartamentoById(String id) {
         return departamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Departamento não encontrado com ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Departamento não encontrado."));
     }
-    
-    public Departamento createDepartamento(Departamento departamento) {
-        // Verificar se código já existe
-        if (departamentoRepository.existsByCodigo(departamento.getCodigo())) {
-            throw new RuntimeException("Já existe um departamento com o código: " + departamento.getCodigo());
-        }
-        
-        return departamentoRepository.save(departamento);
+
+    // UPDATE
+    public Departamento updateDepartamento(String id, Departamento dados) {
+        Departamento existente = getDepartamentoById(id);
+
+        validarDadosDepartamento(dados, id);
+
+        existente.setNome(dados.getNome());
+        existente.setCodigo(dados.getCodigo());
+        existente.setDescricao(dados.getDescricao());
+
+        return departamentoRepository.save(existente);
     }
-    
-    public Departamento updateDepartamento(String id, Departamento departamentoAtualizado) {
-        Departamento departamentoExistente = getDepartamentoById(id);
-        
-        // Verificar se o novo código já existe (se foi alterado)
-        if (!departamentoExistente.getCodigo().equals(departamentoAtualizado.getCodigo()) && 
-            departamentoRepository.existsByCodigo(departamentoAtualizado.getCodigo())) {
-            throw new RuntimeException("Já existe um departamento com o código: " + departamentoAtualizado.getCodigo());
-        }
-        
-        departamentoExistente.setNome(departamentoAtualizado.getNome());
-        departamentoExistente.setCodigo(departamentoAtualizado.getCodigo());
-        departamentoExistente.setDescricao(departamentoAtualizado.getDescricao());
-        
-        return departamentoRepository.save(departamentoExistente);
-    }
-    
+
+    // DELETE
     public void deleteDepartamento(String id) {
-        if (!departamentoRepository.existsById(id)) {
-            throw new RuntimeException("Departamento não encontrado com ID: " + id);
-        }
-        departamentoRepository.deleteById(id);
+        Departamento d = getDepartamentoById(id);
+        // podes adicionar regra: não apagar se tiver cursos, etc.
+        departamentoRepository.delete(d);
     }
-    
-    public List<Departamento> searchDepartamentosByNome(String nome) {
-        return departamentoRepository.findByNomeContainingIgnoreCase(nome);
+
+    // =========================
+    //   MÉTODO DE VALIDAÇÃO
+    // =========================
+    private void validarDadosDepartamento(Departamento d, String idAtual) {
+        if (d == null) {
+            throw new IllegalArgumentException("Departamento não pode ser nulo.");
+        }
+
+        if (d.getNome() == null || d.getNome().isBlank()) {
+            throw new IllegalArgumentException("O nome do departamento é obrigatório.");
+        }
+
+        if (d.getCodigo() == null || d.getCodigo().isBlank()) {
+            throw new IllegalArgumentException("O código do departamento é obrigatório.");
+        }
+
+        // Unicidade do código
+        Optional<Departamento> existenteCodigo = departamentoRepository.findByCodigo(d.getCodigo());
+        if (existenteCodigo.isPresent()
+                && (idAtual == null || !existenteCodigo.get().getId().equals(idAtual))) {
+            throw new IllegalArgumentException("Já existe um departamento com esse código.");
+        }
     }
 }
