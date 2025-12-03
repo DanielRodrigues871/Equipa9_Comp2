@@ -1,68 +1,84 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.DocumentoDTO;
 import com.upt.lp.componente2.entity.Documento;
 import com.upt.lp.componente2.mapper.DocumentoMapper;
 import com.upt.lp.componente2.service.DocumentoService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/documentos")
 public class DocumentoController {
-    
+
     private final DocumentoService documentoService;
-    
+
     public DocumentoController(DocumentoService documentoService) {
         this.documentoService = documentoService;
     }
-    
+
+    // CREATE
+    // POST /api/documentos?estudanteId=XYZ
+    @PostMapping
+    public ResponseEntity<DocumentoDTO> create(@RequestBody DocumentoDTO dto,
+                                               @RequestParam String estudanteId) {
+
+        Documento entidade = DocumentoMapper.toEntity(dto);
+        Documento criado = documentoService.createDocumento(entidade, estudanteId);
+        DocumentoDTO resposta = DocumentoMapper.toDTO(criado);
+
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/documentos
     @GetMapping
-    public List<DocumentoDTO> getAllDocumentos() {
+    public List<DocumentoDTO> getAll() {
         return documentoService.getAllDocumentos()
                 .stream()
                 .map(DocumentoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/documentos/{id}
     @GetMapping("/{id}")
-    public DocumentoDTO getDocumentoById(@PathVariable String id) {
-        Documento documento = documentoService.getDocumentoById(id);
-        return DocumentoMapper.toDTO(documento);
+    public DocumentoDTO getById(@PathVariable String id) {
+        Documento d = documentoService.getDocumentoById(id);
+        return DocumentoMapper.toDTO(d);
     }
-    
-    @PostMapping
-    public DocumentoDTO createDocumento(@RequestBody Documento documento,
-                                       @RequestParam String estudanteId) {
-        Documento novoDocumento = documentoService.createDocumento(documento, estudanteId);
-        return DocumentoMapper.toDTO(novoDocumento);
-    }
-    
-    @PutMapping("/{id}")
-    public DocumentoDTO updateDocumento(@PathVariable String id, @RequestBody Documento documento) {
-        Documento documentoAtualizado = documentoService.updateDocumento(id, documento);
-        return DocumentoMapper.toDTO(documentoAtualizado);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteDocumento(@PathVariable String id) {
-        documentoService.deleteDocumento(id);
-    }
-    
+
+    // READ por estudante
+    // GET /api/documentos/estudante/{estudanteId}
     @GetMapping("/estudante/{estudanteId}")
-    public List<DocumentoDTO> getDocumentosByEstudante(@PathVariable String estudanteId) {
+    public List<DocumentoDTO> getByEstudante(@PathVariable String estudanteId) {
         return documentoService.getDocumentosByEstudante(estudanteId)
                 .stream()
                 .map(DocumentoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    @GetMapping("/search")
-    public List<DocumentoDTO> searchDocumentosByEmpresa(@RequestParam String nomeEmpresa) {
-        return documentoService.searchDocumentosByEmpresa(nomeEmpresa)
-                .stream()
-                .map(DocumentoMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // UPDATE
+    // PUT /api/documentos/{id}?estudanteId=XYZ
+    @PutMapping("/{id}")
+    public DocumentoDTO update(@PathVariable String id, @RequestBody DocumentoDTO dto, @RequestParam String estudanteId) {
+
+        Documento dados = DocumentoMapper.toEntity(dto);
+        Documento atualizado =
+                documentoService.updateDocumento(id, dados, estudanteId);
+
+        return DocumentoMapper.toDTO(atualizado);
+    }
+
+    // DELETE
+    // DELETE /api/documentos/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        documentoService.deleteDocumento(id);
+        return ResponseEntity.noContent().build();
     }
 }

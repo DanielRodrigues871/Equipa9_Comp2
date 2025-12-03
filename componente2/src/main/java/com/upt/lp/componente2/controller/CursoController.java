@@ -1,77 +1,93 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.CursoDTO;
 import com.upt.lp.componente2.entity.Curso;
 import com.upt.lp.componente2.mapper.CursoMapper;
 import com.upt.lp.componente2.service.CursoService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/cursos")
 public class CursoController {
-    
+
     private final CursoService cursoService;
-    
+
     public CursoController(CursoService cursoService) {
         this.cursoService = cursoService;
     }
-    
+
+    // CREATE
+    // POST /api/cursos?departamentoId=XXX&coordenadorId=YYY (coordenadorId opcional)
+    @PostMapping
+    public ResponseEntity<CursoDTO> create(@RequestBody CursoDTO dto, @RequestParam String departamentoId, @RequestParam(required = false) String coordenadorId) {
+
+        Curso entidade = CursoMapper.toEntity(dto);
+        Curso criado = cursoService.createCurso(entidade, departamentoId, coordenadorId);
+        CursoDTO resposta = CursoMapper.toDTO(criado);
+
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/cursos
     @GetMapping
-    public List<CursoDTO> getAllCursos() {
+    public List<CursoDTO> getAll() {
         return cursoService.getAllCursos()
                 .stream()
                 .map(CursoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/cursos/{id}
     @GetMapping("/{id}")
-    public CursoDTO getCursoById(@PathVariable String id) {
-        Curso curso = cursoService.getCursoById(id);
-        return CursoMapper.toDTO(curso);
+    public CursoDTO getById(@PathVariable String id) {
+        Curso c = cursoService.getCursoById(id);
+        return CursoMapper.toDTO(c);
     }
-    
-    @PostMapping
-    public CursoDTO createCurso(@RequestBody Curso curso,
-                               @RequestParam(required = false) String departamentoId,
-                               @RequestParam(required = false) String coordenadorId) {
-        Curso novoCurso = cursoService.createCurso(curso, departamentoId, coordenadorId);
-        return CursoMapper.toDTO(novoCurso);
-    }
-    
-    @PutMapping("/{id}")
-    public CursoDTO updateCurso(@PathVariable String id, @RequestBody Curso curso) {
-        Curso cursoAtualizado = cursoService.updateCurso(id, curso);
-        return CursoMapper.toDTO(cursoAtualizado);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteCurso(@PathVariable String id) {
-        cursoService.deleteCurso(id);
-    }
-    
+
+    // READ por departamento
+    // GET /api/cursos/departamento/{departamentoId}
     @GetMapping("/departamento/{departamentoId}")
-    public List<CursoDTO> getCursosByDepartamento(@PathVariable String departamentoId) {
+    public List<CursoDTO> getByDepartamento(@PathVariable String departamentoId) {
         return cursoService.getCursosByDepartamento(departamentoId)
                 .stream()
                 .map(CursoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por coordenador
+    // GET /api/cursos/coordenador/{coordenadorId}
     @GetMapping("/coordenador/{coordenadorId}")
-    public List<CursoDTO> getCursosByCoordenador(@PathVariable String coordenadorId) {
+    public List<CursoDTO> getByCoordenador(@PathVariable String coordenadorId) {
         return cursoService.getCursosByCoordenador(coordenadorId)
                 .stream()
                 .map(CursoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    @GetMapping("/search")
-    public List<CursoDTO> searchCursosByNome(@RequestParam String nome) {
-        return cursoService.searchCursosByNome(nome)
-                .stream()
-                .map(CursoMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // UPDATE
+    // PUT /api/cursos/{id}?departamentoId=XXX&coordenadorId=YYY
+    @PutMapping("/{id}")
+    public CursoDTO update(@PathVariable String id, @RequestBody CursoDTO dto, @RequestParam String departamentoId, @RequestParam(required = false) String coordenadorId) {
+
+        Curso dados = CursoMapper.toEntity(dto);
+        Curso atualizado =
+                cursoService.updateCurso(id, dados, departamentoId, coordenadorId);
+
+        return CursoMapper.toDTO(atualizado);
+    }
+
+    // DELETE
+    // DELETE /api/cursos/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        cursoService.deleteCurso(id);
+        return ResponseEntity.noContent().build();
     }
 }

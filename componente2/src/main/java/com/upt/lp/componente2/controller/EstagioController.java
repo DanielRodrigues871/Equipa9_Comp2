@@ -1,114 +1,134 @@
 package com.upt.lp.componente2.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.EstagioDTO;
 import com.upt.lp.componente2.entity.Estagio;
 import com.upt.lp.componente2.mapper.EstagioMapper;
 import com.upt.lp.componente2.service.EstagioService;
-import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/estagios")
 public class EstagioController {
-    
+
     private final EstagioService estagioService;
-    
+
     public EstagioController(EstagioService estagioService) {
         this.estagioService = estagioService;
     }
-    
+
+    // CREATE
+    // POST /api/estagios?estudanteId=E&ofertaId=O
+    @PostMapping
+    public ResponseEntity<EstagioDTO> create(@RequestBody EstagioDTO dto,
+                                             @RequestParam String estudanteId,
+                                             @RequestParam String ofertaId) {
+
+        Estagio entidade = EstagioMapper.toEntity(dto);
+        Estagio criado = estagioService.createEstagio(entidade, estudanteId, ofertaId);
+        EstagioDTO resposta = EstagioMapper.toDTO(criado);
+
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/estagios
     @GetMapping
-    public List<EstagioDTO> getAllEstagios() {
+    public List<EstagioDTO> getAll() {
         return estagioService.getAllEstagios()
                 .stream()
                 .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/estagios/{id}
     @GetMapping("/{id}")
-    public EstagioDTO getEstagioById(@PathVariable String id) {
-        Estagio estagio = estagioService.getEstagioById(id);
-        return EstagioMapper.toDTO(estagio);
+    public EstagioDTO getById(@PathVariable String id) {
+        Estagio e = estagioService.getEstagioById(id);
+        return EstagioMapper.toDTO(e);
     }
-    
-    @PostMapping
-    public EstagioDTO createEstagio(@RequestBody Estagio estagio,
-                                   @RequestParam String estudanteId,
-                                   @RequestParam String ofertaId) {
-        Estagio novoEstagio = estagioService.createEstagio(estagio, estudanteId, ofertaId);
-        return EstagioMapper.toDTO(novoEstagio);
-    }
-    
-    @PutMapping("/{id}")
-    public EstagioDTO updateEstagio(@PathVariable String id, @RequestBody Estagio estagio) {
-        Estagio estagioAtualizado = estagioService.updateEstagio(id, estagio);
-        return EstagioMapper.toDTO(estagioAtualizado);
-    }
-    
-    @PutMapping("/{id}/concluir")
-    public void concluirEstagio(@PathVariable String id,
-                               @RequestParam String notaFinal,
-                               @RequestParam LocalDate dataFim) {
-        estagioService.concluirEstagio(id, notaFinal, dataFim);
-    }
-    
-    @PutMapping("/{id}/cancelar")
-    public void cancelarEstagio(@PathVariable String id, @RequestParam String observacoes) {
-        estagioService.cancelarEstagio(id, observacoes);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteEstagio(@PathVariable String id) {
-        estagioService.deleteEstagio(id);
-    }
-    
+
+    // READ por estudante
+    // GET /api/estagios/estudante/{estudanteId}
     @GetMapping("/estudante/{estudanteId}")
-    public List<EstagioDTO> getEstagiosByEstudante(@PathVariable String estudanteId) {
+    public List<EstagioDTO> getByEstudante(@PathVariable String estudanteId) {
         return estagioService.getEstagiosByEstudante(estudanteId)
                 .stream()
                 .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por empresa
+    // GET /api/estagios/empresa/{empresaId}
     @GetMapping("/empresa/{empresaId}")
-    public List<EstagioDTO> getEstagiosByEmpresa(@PathVariable String empresaId) {
+    public List<EstagioDTO> getByEmpresa(@PathVariable String empresaId) {
         return estagioService.getEstagiosByEmpresa(empresaId)
                 .stream()
                 .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por curso
+    // GET /api/estagios/curso/{cursoId}
     @GetMapping("/curso/{cursoId}")
-    public List<EstagioDTO> getEstagiosByCurso(@PathVariable String cursoId) {
+    public List<EstagioDTO> getByCurso(@PathVariable String cursoId) {
         return estagioService.getEstagiosByCurso(cursoId)
                 .stream()
                 .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por estado
+    // GET /api/estagios/estado/{estado}
     @GetMapping("/estado/{estado}")
-    public List<EstagioDTO> getEstagiosByEstado(@PathVariable String estado) {
+    public List<EstagioDTO> getByEstado(@PathVariable String estado) {
         return estagioService.getEstagiosByEstado(estado)
                 .stream()
                 .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    @GetMapping("/concluidos")
-    public List<EstagioDTO> getEstagiosConcluidos() {
-        return estagioService.getEstagiosConcluidos()
-                .stream()
-                .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // UPDATE (dados base)
+    // PUT /api/estagios/{id}
+    @PutMapping("/{id}")
+    public EstagioDTO update(@PathVariable String id,
+                             @RequestBody EstagioDTO dto) {
+        Estagio dados = EstagioMapper.toEntity(dto);
+        Estagio atualizado = estagioService.updateEstagio(id, dados);
+        return EstagioMapper.toDTO(atualizado);
     }
-    
-    @GetMapping("/em-curso")
-    public List<EstagioDTO> getEstagiosEmCurso() {
-        return estagioService.getEstagiosEmCurso()
-                .stream()
-                .map(EstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // WORKFLOW: concluir
+    // POST /api/estagios/{id}/concluir
+    @PostMapping("/{id}/concluir")
+    public EstagioDTO concluir(@PathVariable String id,
+                               @RequestBody EstagioDTO dto) {
+        LocalDate dataFim = dto.getDataFim();
+        String notaFinal = dto.getNotaFinal();
+        Estagio e = estagioService.concluirEstagio(id, notaFinal, dataFim);
+        return EstagioMapper.toDTO(e);
+    }
+
+    // WORKFLOW: cancelar
+    // POST /api/estagios/{id}/cancelar
+    @PostMapping("/{id}/cancelar")
+    public EstagioDTO cancelar(@PathVariable String id,
+                               @RequestBody EstagioDTO dto) {
+        Estagio e = estagioService.cancelarEstagio(id, dto.getObservacoes());
+        return EstagioMapper.toDTO(e);
+    }
+
+    // DELETE
+    // DELETE /api/estagios/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        estagioService.deleteEstagio(id);
+        return ResponseEntity.noContent().build();
     }
 }

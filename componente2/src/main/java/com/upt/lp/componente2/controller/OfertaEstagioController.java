@@ -1,141 +1,147 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.OfertaEstagioDTO;
 import com.upt.lp.componente2.entity.OfertaEstagio;
 import com.upt.lp.componente2.enums.StatusOferta;
-import com.upt.lp.componente2.enums.TipoEstagio;
 import com.upt.lp.componente2.mapper.OfertaEstagioMapper;
 import com.upt.lp.componente2.service.OfertaEstagioService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/ofertas-estagio")
+@RequestMapping("/api/ofertas")
 public class OfertaEstagioController {
-    
+
     private final OfertaEstagioService ofertaService;
-    
+
     public OfertaEstagioController(OfertaEstagioService ofertaService) {
         this.ofertaService = ofertaService;
     }
-    
+
+    // CREATE
+    // POST /api/ofertas?empresaId=E&areaId=A&cursoId=C&coordenadorId=K
+    @PostMapping
+    public ResponseEntity<OfertaEstagioDTO> create(@RequestBody OfertaEstagioDTO dto, @RequestParam String empresaId,
+                                                   @RequestParam(required = false) String areaId,
+                                                   @RequestParam(required = false) String cursoId,
+                                                   @RequestParam(required = false) String coordenadorId) {
+
+        OfertaEstagio entidade = OfertaEstagioMapper.toEntity(dto);
+        OfertaEstagio criada =
+                ofertaService.createOferta(entidade, empresaId, areaId, cursoId, coordenadorId);
+
+        OfertaEstagioDTO resposta = OfertaEstagioMapper.toDTO(criada);
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/ofertas
     @GetMapping
-    public List<OfertaEstagioDTO> getAllOfertas() {
+    public List<OfertaEstagioDTO> getAll() {
         return ofertaService.getAllOfertas()
                 .stream()
                 .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/ofertas/{id}
     @GetMapping("/{id}")
-    public OfertaEstagioDTO getOfertaById(@PathVariable String id) {
-        OfertaEstagio oferta = ofertaService.getOfertaById(id);
-        return OfertaEstagioMapper.toDTO(oferta);
+    public OfertaEstagioDTO getById(@PathVariable String id) {
+        OfertaEstagio o = ofertaService.getOfertaById(id);
+        return OfertaEstagioMapper.toDTO(o);
     }
-    
-    @PostMapping
-    public OfertaEstagioDTO createOferta(@RequestBody OfertaEstagio oferta,
-                                        @RequestParam String empresaId,
-                                        @RequestParam(required = false) String areaId,
-                                        @RequestParam(required = false) String cursoId,
-                                        @RequestParam(required = false) String coordenadorId) {
-        OfertaEstagio novaOferta = ofertaService.createOferta(oferta, empresaId, areaId, cursoId, coordenadorId);
-        return OfertaEstagioMapper.toDTO(novaOferta);
-    }
-    
-    @PutMapping("/{id}")
-    public OfertaEstagioDTO updateOferta(@PathVariable String id, @RequestBody OfertaEstagio oferta) {
-        OfertaEstagio ofertaAtualizada = ofertaService.updateOferta(id, oferta);
-        return OfertaEstagioMapper.toDTO(ofertaAtualizada);
-    }
-    
-    @PutMapping("/{id}/aprovar")
-    public void aprovarOferta(@PathVariable String id) {
-        ofertaService.aprovarOferta(id);
-    }
-    
-    @PutMapping("/{id}/rejeitar")
-    public void rejeitarOferta(@PathVariable String id) {
-        ofertaService.rejeitarOferta(id);
-    }
-    
-    @PutMapping("/{id}/encerrar")
-    public void encerrarOferta(@PathVariable String id) {
-        ofertaService.encerrarOferta(id);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteOferta(@PathVariable String id) {
-        ofertaService.deleteOferta(id);
-    }
-    
+
+    // READ por empresa
+    // GET /api/ofertas/empresa/{empresaId}
     @GetMapping("/empresa/{empresaId}")
-    public List<OfertaEstagioDTO> getOfertasByEmpresa(@PathVariable String empresaId) {
+    public List<OfertaEstagioDTO> getByEmpresa(@PathVariable String empresaId) {
         return ofertaService.getOfertasByEmpresa(empresaId)
                 .stream()
                 .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por curso
+    // GET /api/ofertas/curso/{cursoId}
     @GetMapping("/curso/{cursoId}")
-    public List<OfertaEstagioDTO> getOfertasByCurso(@PathVariable String cursoId) {
+    public List<OfertaEstagioDTO> getByCurso(@PathVariable String cursoId) {
         return ofertaService.getOfertasByCurso(cursoId)
                 .stream()
                 .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por area
+    // GET /api/ofertas/area/{areaId}
     @GetMapping("/area/{areaId}")
-    public List<OfertaEstagioDTO> getOfertasByArea(@PathVariable String areaId) {
+    public List<OfertaEstagioDTO> getByArea(@PathVariable String areaId) {
         return ofertaService.getOfertasByArea(areaId)
                 .stream()
                 .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por status
+    // GET /api/ofertas/status/{status}
     @GetMapping("/status/{status}")
-    public List<OfertaEstagioDTO> getOfertasByStatus(@PathVariable StatusOferta status) {
+    public List<OfertaEstagioDTO> getByStatus(@PathVariable StatusOferta status) {
         return ofertaService.getOfertasByStatus(status)
                 .stream()
                 .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    @GetMapping("/tipo/{tipo}")
-    public List<OfertaEstagioDTO> getOfertasByTipo(@PathVariable TipoEstagio tipo) {
-        return ofertaService.getOfertasByTipo(tipo)
-                .stream()
-                .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // UPDATE
+    // PUT /api/ofertas/{id}?empresaId=E&areaId=A&cursoId=C&coordenadorId=K
+    @PutMapping("/{id}")
+    public OfertaEstagioDTO update(@PathVariable String id,
+                                   @RequestBody OfertaEstagioDTO dto,
+                                   @RequestParam String empresaId,
+                                   @RequestParam(required = false) String areaId,
+                                   @RequestParam(required = false) String cursoId,
+                                   @RequestParam(required = false) String coordenadorId) {
+
+        OfertaEstagio dados = OfertaEstagioMapper.toEntity(dto);
+        OfertaEstagio atualizada =
+                ofertaService.updateOferta(id, dados, empresaId, areaId, cursoId, coordenadorId);
+
+        return OfertaEstagioMapper.toDTO(atualizada);
     }
-    
-    @GetMapping("/coordenador/{coordenadorId}")
-    public List<OfertaEstagioDTO> getOfertasByCoordenador(@PathVariable String coordenadorId) {
-        return ofertaService.getOfertasByCoordenador(coordenadorId)
-                .stream()
-                .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // WORKFLOW: aprovar
+    // POST /api/ofertas/{id}/aprovar
+    @PostMapping("/{id}/aprovar")
+    public OfertaEstagioDTO aprovar(@PathVariable String id) {
+        OfertaEstagio o = ofertaService.aprovarOferta(id);
+        return OfertaEstagioMapper.toDTO(o);
     }
-    
-    @GetMapping("/search")
-    public List<OfertaEstagioDTO> searchOfertasByTitulo(@RequestParam String titulo) {
-        return ofertaService.searchOfertasByTitulo(titulo)
-                .stream()
-                .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // WORKFLOW: rejeitar
+    // POST /api/ofertas/{id}/rejeitar
+    @PostMapping("/{id}/rejeitar")
+    public OfertaEstagioDTO rejeitar(@PathVariable String id) {
+        OfertaEstagio o = ofertaService.rejeitarOferta(id);
+        return OfertaEstagioMapper.toDTO(o);
     }
-    
-    @GetMapping("/ativas")
-    public List<OfertaEstagioDTO> getOfertasAtivas() {
-        return ofertaService.getOfertasAtivas()
-                .stream()
-                .map(OfertaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // WORKFLOW: encerrar
+    // POST /api/ofertas/{id}/encerrar
+    @PostMapping("/{id}/encerrar")
+    public OfertaEstagioDTO encerrar(@PathVariable String id) {
+        OfertaEstagio o = ofertaService.encerrarOferta(id);
+        return OfertaEstagioMapper.toDTO(o);
     }
-    
-    @GetMapping("/status/{status}/count")
-    public long countOfertasByStatus(@PathVariable StatusOferta status) {
-        return ofertaService.countOfertasByStatus(status);
+
+    // DELETE
+    // DELETE /api/ofertas/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        ofertaService.deleteOferta(id);
+        return ResponseEntity.noContent().build();
     }
 }

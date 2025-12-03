@@ -1,59 +1,69 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.AreaEstagioDTO;
 import com.upt.lp.componente2.entity.AreaEstagio;
 import com.upt.lp.componente2.mapper.AreaEstagioMapper;
 import com.upt.lp.componente2.service.AreaEstagioService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/areas-estagio")
+@RequestMapping("/api/areas")
 public class AreaEstagioController {
-    
+
     private final AreaEstagioService areaService;
-    
+
     public AreaEstagioController(AreaEstagioService areaService) {
         this.areaService = areaService;
     }
-    
+
+    // CREATE
+    // POST /api/areas
+    @PostMapping
+    public ResponseEntity<AreaEstagioDTO> create(@RequestBody AreaEstagioDTO dto) {
+        AreaEstagio entidade = AreaEstagioMapper.toEntity(dto);
+        AreaEstagio criada = areaService.createArea(entidade);
+        AreaEstagioDTO resposta = AreaEstagioMapper.toDTO(criada);
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/areas
     @GetMapping
-    public List<AreaEstagioDTO> getAllAreas() {
+    public List<AreaEstagioDTO> getAll() {
         return areaService.getAllAreas()
                 .stream()
                 .map(AreaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/areas/{id}
     @GetMapping("/{id}")
-    public AreaEstagioDTO getAreaById(@PathVariable String id) {
-        AreaEstagio area = areaService.getAreaById(id);
-        return AreaEstagioMapper.toDTO(area);
+    public AreaEstagioDTO getById(@PathVariable String id) {
+        AreaEstagio a = areaService.getAreaById(id);
+        return AreaEstagioMapper.toDTO(a);
     }
-    
-    @PostMapping
-    public AreaEstagioDTO createArea(@RequestBody AreaEstagio area) {
-        AreaEstagio novaArea = areaService.createArea(area);
-        return AreaEstagioMapper.toDTO(novaArea);
-    }
-    
+
+    // UPDATE
+    // PUT /api/areas/{id}
     @PutMapping("/{id}")
-    public AreaEstagioDTO updateArea(@PathVariable String id, @RequestBody AreaEstagio area) {
-        AreaEstagio areaAtualizada = areaService.updateArea(id, area);
-        return AreaEstagioMapper.toDTO(areaAtualizada);
+    public AreaEstagioDTO update(@PathVariable String id,
+                                 @RequestBody AreaEstagioDTO dto) {
+        AreaEstagio dados = AreaEstagioMapper.toEntity(dto);
+        AreaEstagio atualizada = areaService.updateArea(id, dados);
+        return AreaEstagioMapper.toDTO(atualizada);
     }
-    
+
+    // DELETE
+    // DELETE /api/areas/{id}
     @DeleteMapping("/{id}")
-    public void deleteArea(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         areaService.deleteArea(id);
-    }
-    
-    @GetMapping("/search")
-    public List<AreaEstagioDTO> searchAreasByNome(@RequestParam String nome) {
-        return areaService.searchAreasByNome(nome)
-                .stream()
-                .map(AreaEstagioMapper::toDTO)
-                .collect(Collectors.toList());
+        return ResponseEntity.noContent().build();
     }
 }

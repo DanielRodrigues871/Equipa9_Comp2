@@ -1,67 +1,73 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.CoordenadorDTO;
 import com.upt.lp.componente2.entity.Coordenador;
 import com.upt.lp.componente2.mapper.CoordenadorMapper;
 import com.upt.lp.componente2.service.CoordenadorService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/coordenadores")
 public class CoordenadorController {
-    
+
     private final CoordenadorService coordenadorService;
-    
+
     public CoordenadorController(CoordenadorService coordenadorService) {
         this.coordenadorService = coordenadorService;
     }
-    
+
+    // CREATE
+    // POST /api/coordenadores?departamentoId=XYZ
+    @PostMapping
+    public ResponseEntity<CoordenadorDTO> create(@RequestBody CoordenadorDTO dto, @RequestParam String departamentoId) {
+
+        Coordenador entidade = CoordenadorMapper.toEntity(dto);
+        Coordenador criado = coordenadorService.createCoordenador(entidade, departamentoId);
+        CoordenadorDTO resposta = CoordenadorMapper.toDTO(criado);
+
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/coordenadores
     @GetMapping
-    public List<CoordenadorDTO> getAllCoordenadores() {
+    public List<CoordenadorDTO> getAll() {
         return coordenadorService.getAllCoordenadores()
                 .stream()
                 .map(CoordenadorMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/coordenadores/{id}
     @GetMapping("/{id}")
-    public CoordenadorDTO getCoordenadorById(@PathVariable String id) {
-        Coordenador coordenador = coordenadorService.getCoordenadorById(id);
-        return CoordenadorMapper.toDTO(coordenador);
+    public CoordenadorDTO getById(@PathVariable String id) {
+        Coordenador c = coordenadorService.getCoordenadorById(id);
+        return CoordenadorMapper.toDTO(c);
     }
-    
-    @GetMapping("/email/{email}")
-    public CoordenadorDTO getCoordenadorByEmail(@PathVariable String email) {
-        Coordenador coordenador = coordenadorService.getCoordenadorByEmail(email);
-        return CoordenadorMapper.toDTO(coordenador);
-    }
-    
-    @PostMapping
-    public CoordenadorDTO createCoordenador(@RequestBody Coordenador coordenador, 
-                                           @RequestParam String departamentoId) {
-        Coordenador novoCoordenador = coordenadorService.createCoordenador(coordenador, departamentoId);
-        return CoordenadorMapper.toDTO(novoCoordenador);
-    }
-    
+
+    // UPDATE
+    // PUT /api/coordenadores/{id}?departamentoId=XYZ
     @PutMapping("/{id}")
-    public CoordenadorDTO updateCoordenador(@PathVariable String id, @RequestBody Coordenador coordenador) {
-        Coordenador coordenadorAtualizado = coordenadorService.updateCoordenador(id, coordenador);
-        return CoordenadorMapper.toDTO(coordenadorAtualizado);
+    public CoordenadorDTO update(@PathVariable String id, @RequestBody CoordenadorDTO dto, @RequestParam String departamentoId) {
+
+        Coordenador dados = CoordenadorMapper.toEntity(dto);
+        Coordenador atualizado =
+                coordenadorService.updateCoordenador(id, dados, departamentoId);
+
+        return CoordenadorMapper.toDTO(atualizado);
     }
-    
+
+    // DELETE
+    // DELETE /api/coordenadores/{id}
     @DeleteMapping("/{id}")
-    public void deleteCoordenador(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         coordenadorService.deleteCoordenador(id);
-    }
-    
-    @GetMapping("/departamento/{departamentoId}")
-    public List<CoordenadorDTO> getCoordenadoresByDepartamento(@PathVariable String departamentoId) {
-        return coordenadorService.getCoordenadoresByDepartamento(departamentoId)
-                .stream()
-                .map(CoordenadorMapper::toDTO)
-                .collect(Collectors.toList());
+        return ResponseEntity.noContent().build();
     }
 }

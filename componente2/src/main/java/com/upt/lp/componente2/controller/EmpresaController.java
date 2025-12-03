@@ -1,91 +1,84 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.EmpresaDTO;
 import com.upt.lp.componente2.entity.Empresa;
 import com.upt.lp.componente2.mapper.EmpresaMapper;
 import com.upt.lp.componente2.service.EmpresaService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/empresas")
 public class EmpresaController {
-    
+
     private final EmpresaService empresaService;
-    
+
     public EmpresaController(EmpresaService empresaService) {
         this.empresaService = empresaService;
     }
-    
+
+    // CREATE
+    // POST /api/empresas
+    @PostMapping
+    public ResponseEntity<EmpresaDTO> create(@RequestBody EmpresaDTO dto) {
+        Empresa entidade = EmpresaMapper.toEntity(dto);
+        Empresa criada = empresaService.createEmpresa(entidade);
+        EmpresaDTO resposta = EmpresaMapper.toDTO(criada);
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/empresas
     @GetMapping
-    public List<EmpresaDTO> getAllEmpresas() {
+    public List<EmpresaDTO> getAll() {
         return empresaService.getAllEmpresas()
                 .stream()
                 .map(EmpresaMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/empresas/{id}
     @GetMapping("/{id}")
-    public EmpresaDTO getEmpresaById(@PathVariable String id) {
-        Empresa empresa = empresaService.getEmpresaById(id);
-        return EmpresaMapper.toDTO(empresa);
+    public EmpresaDTO getById(@PathVariable String id) {
+        Empresa e = empresaService.getEmpresaById(id);
+        return EmpresaMapper.toDTO(e);
     }
-    
-    @GetMapping("/nif/{nif}")
-    public EmpresaDTO getEmpresaByNif(@PathVariable String nif) {
-        Empresa empresa = empresaService.getEmpresaByNif(nif);
-        return EmpresaMapper.toDTO(empresa);
-    }
-    
-    @PostMapping
-    public EmpresaDTO createEmpresa(@RequestBody Empresa empresa) {
-        Empresa novaEmpresa = empresaService.createEmpresa(empresa);
-        return EmpresaMapper.toDTO(novaEmpresa);
-    }
-    
+
+    // UPDATE
+    // PUT /api/empresas/{id}
     @PutMapping("/{id}")
-    public EmpresaDTO updateEmpresa(@PathVariable String id, @RequestBody Empresa empresa) {
-        Empresa empresaAtualizada = empresaService.updateEmpresa(id, empresa);
-        return EmpresaMapper.toDTO(empresaAtualizada);
+    public EmpresaDTO update(@PathVariable String id,
+                             @RequestBody EmpresaDTO dto) {
+        Empresa dados = EmpresaMapper.toEntity(dto);
+        Empresa atualizada = empresaService.updateEmpresa(id, dados);
+        return EmpresaMapper.toDTO(atualizada);
     }
-    
+
+    // ATIVAR / DESATIVAR
+    // POST /api/empresas/{id}/ativar
+    @PostMapping("/{id}/ativar")
+    public EmpresaDTO ativar(@PathVariable String id) {
+        Empresa e = empresaService.ativarEmpresa(id);
+        return EmpresaMapper.toDTO(e);
+    }
+
+    // POST /api/empresas/{id}/desativar
+    @PostMapping("/{id}/desativar")
+    public EmpresaDTO desativar(@PathVariable String id) {
+        Empresa e = empresaService.desativarEmpresa(id);
+        return EmpresaMapper.toDTO(e);
+    }
+
+    // DELETE
+    // DELETE /api/empresas/{id}
     @DeleteMapping("/{id}")
-    public void deleteEmpresa(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         empresaService.deleteEmpresa(id);
-    }
-    
-    @GetMapping("/search")
-    public List<EmpresaDTO> searchEmpresasByNome(@RequestParam String nome) {
-        return empresaService.searchEmpresasByNome(nome)
-                .stream()
-                .map(EmpresaMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    @GetMapping("/ativas")
-    public List<EmpresaDTO> getEmpresasAtivas() {
-        return empresaService.getEmpresasAtivas()
-                .stream()
-                .map(EmpresaMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    @GetMapping("/inativas")
-    public List<EmpresaDTO> getEmpresasInativas() {
-        return empresaService.getEmpresasInativas()
-                .stream()
-                .map(EmpresaMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    @PutMapping("/{id}/ativar")
-    public void ativarEmpresa(@PathVariable String id) {
-        empresaService.ativarEmpresa(id);
-    }
-    
-    @PutMapping("/{id}/desativar")
-    public void desativarEmpresa(@PathVariable String id) {
-        empresaService.desativarEmpresa(id);
+        return ResponseEntity.noContent().build();
     }
 }

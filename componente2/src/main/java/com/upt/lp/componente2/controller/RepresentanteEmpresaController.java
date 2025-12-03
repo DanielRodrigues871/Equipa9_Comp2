@@ -1,75 +1,84 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.RepresentanteEmpresaDTO;
 import com.upt.lp.componente2.entity.RepresentanteEmpresa;
 import com.upt.lp.componente2.mapper.RepresentanteEmpresaMapper;
 import com.upt.lp.componente2.service.RepresentanteEmpresaService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/representantes")
 public class RepresentanteEmpresaController {
-    
+
     private final RepresentanteEmpresaService representanteService;
-    
+
     public RepresentanteEmpresaController(RepresentanteEmpresaService representanteService) {
         this.representanteService = representanteService;
     }
-    
+
+    // CREATE
+    // POST /api/representantes?empresaId=XYZ
+    @PostMapping
+    public ResponseEntity<RepresentanteEmpresaDTO> create(@RequestBody RepresentanteEmpresaDTO dto, @RequestParam String empresaId) {
+
+        RepresentanteEmpresa entidade = RepresentanteEmpresaMapper.toEntity(dto);
+        RepresentanteEmpresa criado =
+                representanteService.createRepresentante(entidade, empresaId);
+
+        RepresentanteEmpresaDTO resposta = RepresentanteEmpresaMapper.toDTO(criado);
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/representantes
     @GetMapping
-    public List<RepresentanteEmpresaDTO> getAllRepresentantes() {
+    public List<RepresentanteEmpresaDTO> getAll() {
         return representanteService.getAllRepresentantes()
                 .stream()
                 .map(RepresentanteEmpresaMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/representantes/{id}
     @GetMapping("/{id}")
-    public RepresentanteEmpresaDTO getRepresentanteById(@PathVariable String id) {
-        RepresentanteEmpresa representante = representanteService.getRepresentanteById(id);
-        return RepresentanteEmpresaMapper.toDTO(representante);
+    public RepresentanteEmpresaDTO getById(@PathVariable String id) {
+        RepresentanteEmpresa r = representanteService.getRepresentanteById(id);
+        return RepresentanteEmpresaMapper.toDTO(r);
     }
-    
-    @GetMapping("/email/{email}")
-    public RepresentanteEmpresaDTO getRepresentanteByEmail(@PathVariable String email) {
-        RepresentanteEmpresa representante = representanteService.getRepresentanteByEmail(email);
-        return RepresentanteEmpresaMapper.toDTO(representante);
-    }
-    
-    @PostMapping
-    public RepresentanteEmpresaDTO createRepresentante(@RequestBody RepresentanteEmpresa representante,
-                                                      @RequestParam(required = false) String empresaId) {
-        RepresentanteEmpresa novoRepresentante = representanteService.createRepresentante(representante, empresaId);
-        return RepresentanteEmpresaMapper.toDTO(novoRepresentante);
-    }
-    
-    @PutMapping("/{id}")
-    public RepresentanteEmpresaDTO updateRepresentante(@PathVariable String id, @RequestBody RepresentanteEmpresa representante) {
-        RepresentanteEmpresa representanteAtualizado = representanteService.updateRepresentante(id, representante);
-        return RepresentanteEmpresaMapper.toDTO(representanteAtualizado);
-    }
-    
-    @DeleteMapping("/{id}")
-    public void deleteRepresentante(@PathVariable String id) {
-        representanteService.deleteRepresentante(id);
-    }
-    
+
+    // READ por empresa
+    // GET /api/representantes/empresa/{empresaId}
     @GetMapping("/empresa/{empresaId}")
-    public List<RepresentanteEmpresaDTO> getRepresentantesByEmpresa(@PathVariable String empresaId) {
+    public List<RepresentanteEmpresaDTO> getByEmpresa(@PathVariable String empresaId) {
         return representanteService.getRepresentantesByEmpresa(empresaId)
                 .stream()
                 .map(RepresentanteEmpresaMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
-    @GetMapping("/cargo/{cargo}")
-    public List<RepresentanteEmpresaDTO> getRepresentantesByCargo(@PathVariable String cargo) {
-        return representanteService.getRepresentantesByCargo(cargo)
-                .stream()
-                .map(RepresentanteEmpresaMapper::toDTO)
-                .collect(Collectors.toList());
+
+    // UPDATE
+    // PUT /api/representantes/{id}?empresaId=XYZ
+    @PutMapping("/{id}")
+    public RepresentanteEmpresaDTO update(@PathVariable String id, @RequestBody RepresentanteEmpresaDTO dto, @RequestParam String empresaId) {
+
+        RepresentanteEmpresa dados = RepresentanteEmpresaMapper.toEntity(dto);
+        RepresentanteEmpresa atualizado =
+                representanteService.updateRepresentante(id, dados, empresaId);
+
+        return RepresentanteEmpresaMapper.toDTO(atualizado);
+    }
+
+    // DELETE
+    // DELETE /api/representantes/{id}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        representanteService.deleteRepresentante(id);
+        return ResponseEntity.noContent().build();
     }
 }

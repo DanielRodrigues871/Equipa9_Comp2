@@ -1,59 +1,69 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.DepartamentoDTO;
 import com.upt.lp.componente2.entity.Departamento;
 import com.upt.lp.componente2.mapper.DepartamentoMapper;
 import com.upt.lp.componente2.service.DepartamentoService;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/departamentos")
 public class DepartamentoController {
-    
+
     private final DepartamentoService departamentoService;
-    
+
     public DepartamentoController(DepartamentoService departamentoService) {
         this.departamentoService = departamentoService;
     }
-    
+
+    // CREATE
+    // POST /api/departamentos
+    @PostMapping
+    public ResponseEntity<DepartamentoDTO> create(@RequestBody DepartamentoDTO dto) {
+        Departamento entidade = DepartamentoMapper.toEntity(dto);
+        Departamento criado = departamentoService.createDepartamento(entidade);
+        DepartamentoDTO resposta = DepartamentoMapper.toDTO(criado);
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/departamentos
     @GetMapping
-    public List<DepartamentoDTO> getAllDepartamentos() {
+    public List<DepartamentoDTO> getAll() {
         return departamentoService.getAllDepartamentos()
                 .stream()
                 .map(DepartamentoMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/departamentos/{id}
     @GetMapping("/{id}")
-    public DepartamentoDTO getDepartamentoById(@PathVariable String id) {
-        Departamento departamento = departamentoService.getDepartamentoById(id);
-        return DepartamentoMapper.toDTO(departamento);
+    public DepartamentoDTO getById(@PathVariable String id) {
+        Departamento d = departamentoService.getDepartamentoById(id);
+        return DepartamentoMapper.toDTO(d);
     }
-    
-    @PostMapping
-    public DepartamentoDTO createDepartamento(@RequestBody Departamento departamento) {
-        Departamento novoDepartamento = departamentoService.createDepartamento(departamento);
-        return DepartamentoMapper.toDTO(novoDepartamento);
-    }
-    
+
+    // UPDATE
+    // PUT /api/departamentos/{id}
     @PutMapping("/{id}")
-    public DepartamentoDTO updateDepartamento(@PathVariable String id, @RequestBody Departamento departamento) {
-        Departamento departamentoAtualizado = departamentoService.updateDepartamento(id, departamento);
-        return DepartamentoMapper.toDTO(departamentoAtualizado);
+    public DepartamentoDTO update(@PathVariable String id, @RequestBody DepartamentoDTO dto) {
+
+        Departamento dados = DepartamentoMapper.toEntity(dto);
+        Departamento atualizado = departamentoService.updateDepartamento(id, dados);
+        return DepartamentoMapper.toDTO(atualizado);
     }
-    
+
+    // DELETE
+    // DELETE /api/departamentos/{id}
     @DeleteMapping("/{id}")
-    public void deleteDepartamento(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         departamentoService.deleteDepartamento(id);
-    }
-    
-    @GetMapping("/search")
-    public List<DepartamentoDTO> searchDepartamentosByNome(@RequestParam String nome) {
-        return departamentoService.searchDepartamentosByNome(nome)
-                .stream()
-                .map(DepartamentoMapper::toDTO)
-                .collect(Collectors.toList());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -1,81 +1,81 @@
 package com.upt.lp.componente2.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import com.upt.lp.componente2.dto.EstudanteDTO;
 import com.upt.lp.componente2.entity.Estudante;
 import com.upt.lp.componente2.mapper.EstudanteMapper;
 import com.upt.lp.componente2.service.EstudanteService;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/estudantes")
 public class EstudanteController {
-    
+
     private final EstudanteService estudanteService;
-    
+
     public EstudanteController(EstudanteService estudanteService) {
         this.estudanteService = estudanteService;
     }
-    
+
+    // CREATE
+    // POST /api/estudantes?cursoId=XYZ
+    @PostMapping
+    public ResponseEntity<EstudanteDTO> create(@RequestBody EstudanteDTO dto, @RequestParam String cursoId) {
+
+        Estudante entidade = EstudanteMapper.toEntity(dto);
+        Estudante criado = estudanteService.createEstudante(entidade, cursoId);
+        EstudanteDTO resposta = EstudanteMapper.toDTO(criado);
+
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    }
+
+    // READ todos
+    // GET /api/estudantes
     @GetMapping
-    public List<EstudanteDTO> getAllEstudantes() {
+    public List<EstudanteDTO> getAll() {
         return estudanteService.getAllEstudantes()
                 .stream()
                 .map(EstudanteMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
-    
+
+    // READ por id
+    // GET /api/estudantes/{id}
     @GetMapping("/{id}")
-    public EstudanteDTO getEstudanteById(@PathVariable String id) {
-        Estudante estudante = estudanteService.getEstudanteById(id);
-        return EstudanteMapper.toDTO(estudante);
+    public EstudanteDTO getById(@PathVariable String id) {
+        Estudante e = estudanteService.getEstudanteById(id);
+        return EstudanteMapper.toDTO(e);
     }
-    
-    @GetMapping("/email/{email}")
-    public EstudanteDTO getEstudanteByEmail(@PathVariable String email) {
-        Estudante estudante = estudanteService.getEstudanteByEmail(email);
-        return EstudanteMapper.toDTO(estudante);
-    }
-    
-    @GetMapping("/numero/{numeroEstudante}")
-    public EstudanteDTO getEstudanteByNumero(@PathVariable String numeroEstudante) {
-        Estudante estudante = estudanteService.getEstudanteByNumeroEstudante(numeroEstudante);
-        return EstudanteMapper.toDTO(estudante);
-    }
-    
-    @PostMapping
-    public EstudanteDTO createEstudante(@RequestBody Estudante estudante,
-                                       @RequestParam(required = false) String cursoId) {
-        Estudante novoEstudante = estudanteService.createEstudante(estudante, cursoId);
-        return EstudanteMapper.toDTO(novoEstudante);
-    }
-    
+
+    // UPDATE
+    // PUT /api/estudantes/{id}?cursoId=XYZ
     @PutMapping("/{id}")
-    public EstudanteDTO updateEstudante(@PathVariable String id, @RequestBody Estudante estudante) {
-        Estudante estudanteAtualizado = estudanteService.updateEstudante(id, estudante);
-        return EstudanteMapper.toDTO(estudanteAtualizado);
+    public EstudanteDTO update(@PathVariable String id, @RequestBody EstudanteDTO dto, @RequestParam String cursoId) {
+
+        Estudante dados = EstudanteMapper.toEntity(dto);
+        Estudante atualizado = estudanteService.updateEstudante(id, dados, cursoId);
+        return EstudanteMapper.toDTO(atualizado);
     }
-    
+
+    // DELETE
+    // DELETE /api/estudantes/{id}
     @DeleteMapping("/{id}")
-    public void deleteEstudante(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         estudanteService.deleteEstudante(id);
+        return ResponseEntity.noContent().build();
     }
-    
-    @GetMapping("/curso/{cursoId}")
-    public List<EstudanteDTO> getEstudantesByCurso(@PathVariable String cursoId) {
-        return estudanteService.getEstudantesByCurso(cursoId)
+
+    // EXTRA: estudantes com média >= 9.5
+    // GET /api/estudantes/honras
+    @GetMapping("/honras")
+    public List<EstudanteDTO> getComMediaMaiorOuIgualA9_5() {
+        return estudanteService.getEstudantesComMediaMaiorQue9_5()
                 .stream()
                 .map(EstudanteMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-    
-    @GetMapping("/ano/{anoMatricula}")
-    public List<EstudanteDTO> getEstudantesByAnoMatricula(@PathVariable int anoMatricula) {
-        return estudanteService.getEstudantesByAnoMatricula(anoMatricula)
-                .stream()
-                .map(EstudanteMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

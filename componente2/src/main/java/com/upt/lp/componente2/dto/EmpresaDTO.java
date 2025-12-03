@@ -3,6 +3,7 @@ package com.upt.lp.componente2.dto;
 import java.time.LocalDateTime;
 
 public class EmpresaDTO {
+
     private String id;
     private String nome;
     private String nif;
@@ -14,44 +15,105 @@ public class EmpresaDTO {
     private boolean ativa;
     private LocalDateTime dataCriacao;
 
+    private int numeroRepresentantes;
+    private int numeroOfertasSubmetidas;
+
     public EmpresaDTO() {
     }
 
-    public EmpresaDTO(String id, String nome, String nif, String email) {
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getNif() {
+        return nif;
+    }
+
+    public void setNif(String nif) {
         this.nif = nif;
+    }
+
+    public String getMorada() {
+        return morada;
+    }
+
+    public void setMorada(String morada) {
+        this.morada = morada;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    // Getters e Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getWebsite() {
+        return website;
+    }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setWebsite(String website) {
+        this.website = website;
+    }
 
-    public String getNif() { return nif; }
-    public void setNif(String nif) { this.nif = nif; }
+    public String getDescricao() {
+        return descricao;
+    }
 
-    public String getMorada() { return morada; }
-    public void setMorada(String morada) { this.morada = morada; }
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 
-    public String getTelefone() { return telefone; }
-    public void setTelefone(String telefone) { this.telefone = telefone; }
+    public boolean isAtiva() {
+        return ativa;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setAtiva(boolean ativa) {
+        this.ativa = ativa;
+    }
 
-    public String getWebsite() { return website; }
-    public void setWebsite(String website) { this.website = website; }
+    public LocalDateTime getDataCriacao() {
+        return dataCriacao;
+    }
 
-    public String getDescricao() { return descricao; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public void setDataCriacao(LocalDateTime dataCriacao) {
+        this.dataCriacao = dataCriacao;
+    }
 
-    public boolean isAtiva() { return ativa; }
-    public void setAtiva(boolean ativa) { this.ativa = ativa; }
+    public int getNumeroRepresentantes() {
+        return numeroRepresentantes;
+    }
 
-    public LocalDateTime getDataCriacao() { return dataCriacao; }
-    public void setDataCriacao(LocalDateTime dataCriacao) { this.dataCriacao = dataCriacao; }
+    public void setNumeroRepresentantes(int numeroRepresentantes) {
+        this.numeroRepresentantes = numeroRepresentantes;
+    }
+
+    public int getNumeroOfertasSubmetidas() {
+        return numeroOfertasSubmetidas;
+    }
+
+    public void setNumeroOfertasSubmetidas(int numeroOfertasSubmetidas) {
+        this.numeroOfertasSubmetidas = numeroOfertasSubmetidas;
+    }
 }
