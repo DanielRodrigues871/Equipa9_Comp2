@@ -1,6 +1,7 @@
 package com.upt.pt.api.service;
 
 import java.time.LocalDateTime;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import com.upt.pt.api.enums.StatusOferta;
 import com.upt.pt.api.enums.TipoEstagio;
 import com.upt.pt.api.repository.*;
 
+
 @Service
 public class OfertaEstagioService {
 
@@ -18,20 +20,28 @@ public class OfertaEstagioService {
     private final AreaEstagioRepository areaRepository;
     private final CursoRepository cursoRepository;
     private final CoordenadorRepository coordenadorRepository;
+    private final NotificacaoService notificacaoService;
+    private final EstudanteRepository estudanteRepository;
+    private final RepresentanteEmpresaRepository representanteRepository;
 
     public OfertaEstagioService(OfertaEstagioRepository ofertaRepository,
                                 EmpresaRepository empresaRepository,
                                 AreaEstagioRepository areaRepository,
                                 CursoRepository cursoRepository,
-                                CoordenadorRepository coordenadorRepository) {
+                                CoordenadorRepository coordenadorRepository, NotificacaoService notificacaoService, 
+                                EstudanteRepository estudanteRepository, RepresentanteEmpresaRepository representanteRepository) {
         this.ofertaRepository = ofertaRepository;
         this.empresaRepository = empresaRepository;
         this.areaRepository = areaRepository;
         this.cursoRepository = cursoRepository;
         this.coordenadorRepository = coordenadorRepository;
+        this.notificacaoService = notificacaoService;
+        this.estudanteRepository = estudanteRepository;
+        this.representanteRepository = representanteRepository;
     }
 
     // CREATE
+ 
     public OfertaEstagio createOferta(OfertaEstagio o,
                                       String empresaId,
                                       String areaId,
@@ -65,8 +75,22 @@ public class OfertaEstagioService {
         o.setStatus(StatusOferta.PENDENTE);
         o.setDataPublicacao(LocalDateTime.now());
 
-        return ofertaRepository.save(o);
+        OfertaEstagio ofertaSalva = ofertaRepository.save(o); // ✅ SALVAR E GUARDAR
+
+        // ✅ NOTIFICAÇÃO: Coordenador do curso recebe notificação de nova oferta pendente
+        if (ofertaSalva.getCurso() != null && ofertaSalva.getCurso().getCoordenador() != null) {
+            notificacaoService.enviar(
+                ofertaSalva.getCurso().getCoordenador().getId(),
+                "Nova oferta pendente de avaliação",
+                String.format("Existe uma nova oferta '%s' da empresa %s à espera da tua avaliação.", 
+                             ofertaSalva.getTitulo(), ofertaSalva.getEmpresa().getNome())
+            );
+        }
+
+        return ofertaSalva; // ✅ UM ÚNICO RETURN NO FINAL
     }
+
+    
 
     // READ todos
     public List<OfertaEstagio> getAllOfertas() {
@@ -163,6 +187,21 @@ public class OfertaEstagioService {
  // WORKFLOW
     public OfertaEstagio aprovarOferta(String id) {
         OfertaEstagio o = getOfertaById(id);
+        
+     // ✅ NOTIFICAÇÃO: Quando aprovada, notificar todos estudantes do curso
+        if (o.getCurso() != null) {
+            List<Estudante> estudantesCurso = estudanteRepository.findByCursoId(o.getCurso().getId());
+            for (Estudante estudante : estudantesCurso) {
+                notificacaoService.enviar(
+                    estudante.getId(),
+                    "Nova oferta de estágio aprovada!",
+                    String.format("Foi aprovada a oferta '%s' da empresa %s para o curso %s.", 
+                                 o.getTitulo(), 
+                                 o.getEmpresa().getNome(),
+                                 o.getCurso().getNome())
+                );
+            }
+        }
         o.setStatus(StatusOferta.APROVADO);
         o.setDataAprovacao(LocalDateTime.now());
         return ofertaRepository.save(o);
@@ -170,6 +209,21 @@ public class OfertaEstagioService {
 
     public OfertaEstagio rejeitarOferta(String id) {
         OfertaEstagio o = getOfertaById(id);
+     // ✅ NOTIFICAÇÃO: Todos representantes da empresa são notificados
+        if (o.getEmpresa() != null) {
+            List<RepresentanteEmpresa> representantes = 
+                representanteRepository.findByEmpresaId(o.getEmpresa().getId());
+            
+            for (RepresentanteEmpresa representante : representantes) {
+                notificacaoService.enviar(
+                    representante.getId(),
+                    "Oferta de estágio rejeitada",
+                    String.format("A oferta '%s' submetida pela tua empresa foi rejeitada. " +
+                                 "Verifica os requisitos e submete novamente se necessário.", 
+                                 o.getTitulo())
+                );
+            }
+        }
         o.setStatus(StatusOferta.REJEITADO);
         return ofertaRepository.save(o);
     }

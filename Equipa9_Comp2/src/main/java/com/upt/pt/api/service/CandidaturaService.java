@@ -1,6 +1,7 @@
 package com.upt.pt.api.service;
 
 import java.time.LocalDateTime;
+ 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -22,15 +23,17 @@ public class CandidaturaService {
     private final EstudanteRepository estudanteRepository;
     private final OfertaEstagioRepository ofertaEstagioRepository;
     private final CoordenadorRepository coordenadorRepository;
+    private final NotificacaoService notificacaoService;
 
     public CandidaturaService(CandidaturaRepository candidaturaRepository,
                               EstudanteRepository estudanteRepository,
                               OfertaEstagioRepository ofertaEstagioRepository,
-                              CoordenadorRepository coordenadorRepository) {
+                              CoordenadorRepository coordenadorRepository, NotificacaoService notificacaoService) {
         this.candidaturaRepository = candidaturaRepository;
         this.estudanteRepository = estudanteRepository;
         this.ofertaEstagioRepository = ofertaEstagioRepository;
         this.coordenadorRepository = coordenadorRepository;
+        this.notificacaoService = notificacaoService;
     }
 
     // CREATE
@@ -50,7 +53,23 @@ public class CandidaturaService {
         c.setStatus(StatusCandidatura.SUBMETIDA);
         c.setDataSubmissao(LocalDateTime.now());
 
-        return candidaturaRepository.save(c);
+        
+        
+        Candidatura candidatura = candidaturaRepository.save(c);
+        
+
+     // ✅ NOTIFICAÇÃO: Coordenador responsável recebe notificação da nova candidatura
+        Coordenador coord = oferta.getCoordenadorResponsavel();
+        if (coord != null) {
+            notificacaoService.enviar(
+                coord.getId(),
+                "Nova candidatura submetida",
+                String.format("O estudante %s submeteu uma candidatura à oferta '%s'.", 
+                             est.getNome(), oferta.getTitulo())
+            );
+        }
+
+        return candidatura;
     }
 
     // READ todos
@@ -110,7 +129,17 @@ public class CandidaturaService {
         c.setCoordenadorResponsavel(coord);
         c.setObservacoes(observacoes);
 
-        return candidaturaRepository.save(c);
+        Candidatura candidatura = candidaturaRepository.save(c);
+
+        // ✅ NOTIFICAÇÃO: Estudante é notificado da aprovação
+        notificacaoService.enviar(
+            c.getEstudante().getId(),
+            "Candidatura aprovada!",
+            String.format("A tua candidatura à oferta '%s' foi aprovada pelo coordenador.", 
+                         c.getOferta().getTitulo())
+        );
+
+        return candidatura;
     }
 
     public Candidatura rejeitar(String id, String coordenadorId, String observacoes) {
@@ -126,7 +155,17 @@ public class CandidaturaService {
         c.rejeitar(observacoes);
         c.setCoordenadorResponsavel(coord);
 
-        return candidaturaRepository.save(c);
+        Candidatura candidatura = candidaturaRepository.save(c);
+
+        // ✅ NOTIFICAÇÃO: Estudante é notificado da rejeição
+        notificacaoService.enviar(
+            c.getEstudante().getId(),
+            "Candidatura rejeitada",
+            String.format("A tua candidatura à oferta '%s' foi rejeitada. Observações: %s", 
+                         c.getOferta().getTitulo(), observacoes)
+        );
+
+        return candidatura;
     }
 
     // DELETE

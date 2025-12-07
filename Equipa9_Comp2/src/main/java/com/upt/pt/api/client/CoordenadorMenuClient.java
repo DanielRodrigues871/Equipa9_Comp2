@@ -22,8 +22,13 @@ public class CoordenadorMenuClient {
             System.out.println("5. Aprovar oferta");
             System.out.println("6. Rejeitar oferta");
             System.out.println("7. Listar todas as ofertas");
-            System.out.println("8. Menu Candidaturas");
-            System.out.println("9. Menu Empresas");
+            System.out.println("8. Ver candidaturas de uma oferta");
+            System.out.println("9. Gerir candidatura (analisar/aprovar/rejeitar)");
+            System.out.println("10. Registar curso");
+            System.out.println("11. Listar estudantes de um curso");
+            System.out.println("12. Menu Candidaturas");
+            System.out.println("13. Menu Empresas");
+            System.out.println("14. Ver estatísticas detalhadas");
             System.out.println("0. Logout");
             System.out.print("Escolha: ");
 
@@ -39,8 +44,12 @@ public class CoordenadorMenuClient {
                     case 5 -> workflowOferta("aprovar");
                     case 6 -> workflowOferta("rejeitar");
                     case 7 -> RestClientHelper.get("/api/ofertas");
-                    case 8 -> new CandidaturasMenuClient(sc).run();
-                    case 9 -> new EmpresasMenuClient(sc).run();
+                    case 8 -> verCandidaturasDeOferta();
+                    case 9 -> gerirCandidatura();
+                    case 10 -> registarCurso();
+                    case 11 -> listarEstudantesDeCurso();
+                    case 12 -> new CandidaturasMenuClient(sc).run();
+                    case 13 -> new EmpresasMenuClient(sc).run();
                     case 0 -> { return; }
                     default -> System.out.println("Opção inválida!");
                 }
@@ -49,6 +58,8 @@ public class CoordenadorMenuClient {
             }
         }
     }
+
+
 
     private void criarOferta() throws IOException, InterruptedException {
         System.out.println("\n--- CRIAR OFERTA ---");
@@ -130,5 +141,96 @@ public class CoordenadorMenuClient {
         System.out.print("ID da oferta: ");
         String id = sc.nextLine();
         RestClientHelper.post("/api/ofertas/" + id + "/" + acao, "");
+    }
+    
+    private void verCandidaturasDeOferta() throws IOException, InterruptedException {
+        System.out.print("ID da oferta: ");
+        String ofertaId = sc.nextLine();
+        RestClientHelper.get("/api/candidaturas/oferta/" + ofertaId);
+    }
+
+    private void gerirCandidatura() throws IOException, InterruptedException {
+        System.out.println("\n--- GERIR CANDIDATURA ---");
+        System.out.print("ID da candidatura: ");
+        String candId = sc.nextLine();
+        System.out.println("1. Colocar em análise");
+        System.out.println("2. Aprovar");
+        System.out.println("3. Rejeitar");
+        System.out.print("Opção: ");
+        int op = MainConsole.lerInteiro(sc);
+        sc.nextLine();
+
+        System.out.print("ID do coordenador (teu ID): ");
+        String coordId = sc.nextLine();
+
+        switch (op) {
+            case 1 -> RestClientHelper.post(
+                    "/api/candidaturas/" + candId + "/analise?coordenadorId=" + coordId, "");
+            case 2 -> {
+                System.out.print("Observações (opcional): ");
+                String obs = sc.nextLine();
+                String json = """
+                        {
+                          "observacoes": "%s"
+                        }
+                        """.formatted(obs);
+                RestClientHelper.post(
+                        "/api/candidaturas/" + candId + "/aprovar?coordenadorId=" + coordId, json);
+            }
+            case 3 -> {
+                System.out.print("Observações (obrigatório para rejeitar): ");
+                String obs = sc.nextLine();
+                String json = """
+                        {
+                          "observacoes": "%s"
+                        }
+                        """.formatted(obs);
+                RestClientHelper.post(
+                        "/api/candidaturas/" + candId + "/rejeitar?coordenadorId=" + coordId, json);
+            }
+            default -> System.out.println("Opção inválida.");
+        }
+    }
+    
+    private void registarCurso() throws IOException, InterruptedException {
+        System.out.println("\n--- REGISTAR CURSO ---");
+        System.out.print("Nome do curso: ");
+        String nome = sc.nextLine();
+        System.out.print("Código do curso: ");
+        String codigo = sc.nextLine();
+        System.out.print("Duração (anos): ");
+        int duracao = MainConsole.lerInteiro(sc);
+        sc.nextLine();
+        System.out.print("Grau (Licenciatura/Mestrado/...): ");
+        String grau = sc.nextLine();
+        System.out.print("ID do departamento: ");
+        String departamentoId = sc.nextLine();
+        System.out.print("ID do coordenador (opcional, ENTER para nenhum): ");
+        String coordId = sc.nextLine();
+        String query = coordId.isBlank()
+                ? "?departamentoId=" + departamentoId
+                : "?departamentoId=" + departamentoId + "&coordenadorId=" + coordId;
+
+        String json = """
+                {
+                  "nome": "%s",
+                  "codigo": "%s",
+                  "duracaoAnos": %d,
+                  "grau": "%s"
+                }
+                """.formatted(nome, codigo, duracao, grau);
+
+        HttpResponse<String> resp =
+                RestClientHelper.post("/api/cursos" + query, json);
+        System.out.println("HTTP " + resp.statusCode());
+        System.out.println(resp.body());
+    }
+
+
+    private void listarEstudantesDeCurso() throws IOException, InterruptedException {
+        System.out.println("\n--- LISTAR ESTUDANTES DE UM CURSO ---");
+        System.out.print("ID do curso: ");
+        String cursoId = sc.nextLine();
+        RestClientHelper.get("/api/estudantes/curso/" + cursoId);
     }
 }
