@@ -3,22 +3,19 @@ package com.upt.pt.api.mapper;
 import com.upt.pt.api.dto.NotificacaoDTO;
 import com.upt.pt.api.entity.Notificacao;
 
-/**
- * Converte entidade Notificacao em NotificacaoDTO.
- */
+import java.time.format.DateTimeFormatter;
+
 public class NotificacaoMapper {
 
-    public static NotificacaoDTO toDTO(Notificacao n) {
-        if (n == null) return null;
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
+    public static NotificacaoDTO toDTO(Notificacao n) {
         NotificacaoDTO dto = new NotificacaoDTO();
         dto.setId(n.getId());
-        dto.setTitulo(n.getTitulo());
         dto.setMensagem(n.getMensagem());
         dto.setLida(n.isLida());
-        dto.setDataCriacao(n.getDataCriacao());
-        dto.setUtilizadorId(n.getUtilizadorId());
-
+        dto.setData(n.getDataCriacao().format(FORMATTER));
         return dto;
     }
 }

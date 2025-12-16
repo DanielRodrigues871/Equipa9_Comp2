@@ -5,10 +5,6 @@ import com.upt.pt.api.repository.NotificacaoRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
-/**
- * Serviço responsável por gerir notificações dos utilizadores.
- */
 @Service
 public class NotificacaoService {
 
@@ -19,28 +15,33 @@ public class NotificacaoService {
     }
 
     public Notificacao enviar(String utilizadorId, String titulo, String mensagem) {
-
-        System.out.println("ENVIANDO NOTIFICAÇÃO PARA UTILIZADOR " + utilizadorId);
-        System.out.println("TITULO: " + titulo);
-        System.out.println("MENSAGEM: " + mensagem);
-
         Notificacao n = new Notificacao();
         n.setUtilizadorId(utilizadorId);
         n.setTitulo(titulo);
         n.setMensagem(mensagem);
-
         return notificacaoRepository.save(n);
     }
 
-
     public List<Notificacao> listarPorUtilizador(String utilizadorId) {
-        return notificacaoRepository.findByUtilizadorIdOrderByDataCriacaoDesc(utilizadorId);
+        return notificacaoRepository
+                .findByUtilizadorIdOrderByDataCriacaoDesc(utilizadorId);
     }
 
     public void marcarComoLida(String id) {
         Notificacao n = notificacaoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Notificação não encontrada."));
+                .orElseThrow();
         n.setLida(true);
         notificacaoRepository.save(n);
+    }
+
+    public void marcarTodasComoLidas(String utilizadorId) {
+        List<Notificacao> lista =
+                notificacaoRepository.findByUtilizadorIdOrderByDataCriacaoDesc(utilizadorId);
+
+        for (Notificacao n : lista) {
+            n.setLida(true);
+        }
+
+        notificacaoRepository.saveAll(lista);
     }
 }

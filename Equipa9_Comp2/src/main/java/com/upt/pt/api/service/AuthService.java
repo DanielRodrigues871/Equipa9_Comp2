@@ -40,76 +40,73 @@ public class AuthService {
         this.representanteRepository = representanteRepository;
     }
 
-    // -------- REGISTO  --------
+    // =================================================================
+    //  REGISTO (SOLUÇÃO AQUI)
+    // =================================================================
 
     public Object register(RegistoDTO dto) {
         if (dto.getTipo() == null) {
             throw new IllegalArgumentException("Tipo de utilizador é obrigatório.");
         }
 
+        // --- SOLUÇÃO CRÍTICA ---
+        // 1. Geramos a Hash segura (BCrypt) usando a password limpa
+        // O método hashPassword já valida se a senha é forte.
+        String passwordHashed = PasswordUtils.hashPassword(dto.getPassword());
+        
+        // 2. Substituímos a password no DTO pela Hash
+        // Assim, quando o 'estudanteService' salvar, guarda a Hash e não o texto limpo
+        dto.setPassword(passwordHashed);
+
         String tipo = dto.getTipo().toUpperCase();
 
         return switch (tipo) {
-            case "ESTUDANTE"     -> estudanteService.createFromRegister(dto);
-            case "COORDENADOR"   -> coordenadorService.createFromRegister(dto);
-            case "REPRESENTANTE" -> representanteService.createFromRegister(dto);
+            case "ESTUDANTE"      -> estudanteService.createFromRegister(dto);
+            case "COORDENADOR"    -> coordenadorService.createFromRegister(dto);
+            case "REPRESENTANTE"  -> representanteService.createFromRegister(dto);
             default -> throw new IllegalArgumentException("Tipo inválido. Use ESTUDANTE, COORDENADOR ou REPRESENTANTE.");
         };
     }
 
-    // -------- LOGIN --------
+    // =================================================================
+    //  LOGIN
+    // =================================================================
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
         if (dto.getEmail() == null || dto.getPassword() == null) {
             throw new IllegalArgumentException("Email e password são obrigatórios.");
         }
 
-        System.out.println("LOGIN DTO email=" + dto.getEmail());
-        System.out.println("LOGIN DTO password=" + dto.getPassword());
-
-        // 1) tentar estudante
+        // 1) Tentar ESTUDANTE
         Optional<Estudante> estOpt = estudanteRepository.findByEmail(dto.getEmail());
-        System.out.println("Encontrou estudante? " + estOpt.isPresent());
-
         if (estOpt.isPresent()) {
             Estudante e = estOpt.get();
-            System.out.println("Password BD (estudante)=" + e.getPassword());
-            boolean ok = PasswordUtils.verifyPassword(dto.getPassword(), e.getPassword());
-            System.out.println("verify estudante = " + ok);
-            if (ok) {
-                return new LoginResponseDTO(e.getId(), e.getNome(), e.getEmail(), "ESTUDANTE");
+            // verifyPassword compara a pass limpa (dto) com a hash da BD (e.getPassword)
+            if (PasswordUtils.verifyPassword(dto.getPassword(), e.getPassword())) {
+                // Sucesso! Convertemos o ID para String
+                return new LoginResponseDTO(String.valueOf(e.getId()), e.getNome(), e.getEmail(), "ESTUDANTE");
             }
         }
 
-        // 2) tentar coordenador
+        // 2) Tentar COORDENADOR
         Optional<Coordenador> coordOpt = coordenadorRepository.findByEmail(dto.getEmail());
-        System.out.println("Encontrou coordenador? " + coordOpt.isPresent());
-
         if (coordOpt.isPresent()) {
             Coordenador c = coordOpt.get();
-            System.out.println("Password BD (coord)=" + c.getPassword());
-            boolean ok = PasswordUtils.verifyPassword(dto.getPassword(), c.getPassword());
-            System.out.println("verify coord = " + ok);
-            if (ok) {
-                return new LoginResponseDTO(c.getId(), c.getNome(), c.getEmail(), "COORDENADOR");
+            if (PasswordUtils.verifyPassword(dto.getPassword(), c.getPassword())) {
+                return new LoginResponseDTO(String.valueOf(c.getId()), c.getNome(), c.getEmail(), "COORDENADOR");
             }
         }
 
-        // 3) tentar representante
+        // 3) Tentar REPRESENTANTE
         Optional<RepresentanteEmpresa> repOpt = representanteRepository.findByEmail(dto.getEmail());
-        System.out.println("Encontrou representante? " + repOpt.isPresent());
-
         if (repOpt.isPresent()) {
             RepresentanteEmpresa r = repOpt.get();
-            System.out.println("Password BD (rep)=" + r.getPassword());
-            boolean ok = PasswordUtils.verifyPassword(dto.getPassword(), r.getPassword());
-            System.out.println("verify rep = " + ok);
-            if (ok) {
-                return new LoginResponseDTO(r.getId(), r.getNome(), r.getEmail(), "REPRESENTANTE");
+            if (PasswordUtils.verifyPassword(dto.getPassword(), r.getPassword())) {
+                return new LoginResponseDTO(String.valueOf(r.getId()), r.getNome(), r.getEmail(), "REPRESENTANTE");
             }
         }
 
-        System.out.println("LOGIN FALHOU: email ou password inválidos.");
+        // Se chegou aqui, não encontrou email ou a password não bateu certo com nenhum
         throw new IllegalArgumentException("Email ou password inválidos.");
     }
 }

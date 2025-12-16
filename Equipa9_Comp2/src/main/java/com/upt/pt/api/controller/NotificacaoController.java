@@ -28,18 +28,13 @@ public class NotificacaoController {
                 .toList();
     }
 
-    @PostMapping("/enviar")
-    public NotificacaoDTO enviar(@RequestParam String utilizadorId,
-                                 @RequestParam String titulo,
-                                 @RequestParam String mensagem) {
-
-        return NotificacaoMapper.toDTO(
-                service.enviar(utilizadorId, titulo, mensagem)
-        );
+    @PostMapping("/{id}/marcar-todas")
+    public void marcarTodas(@PathVariable String id) {
+        service.marcarTodasComoLidas(id);
     }
 
     @PutMapping("/{id}/lida")
-    public void marcarComoLida(@PathVariable String id) {
+    public void marcarUma(@PathVariable String id) {
         service.marcarComoLida(id);
     }
 }

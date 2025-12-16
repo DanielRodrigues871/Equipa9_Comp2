@@ -2,22 +2,22 @@ package com.upt.pt.api.dto;
 
 public class LoginResponseDTO {
 
-    private String idUtilizador;
+    private String id;
     private String nome;
     private String email;
     private String tipo; // ESTUDANTE / COORDENADOR / REPRESENTANTE
 
     public LoginResponseDTO() {}
 
-    public LoginResponseDTO(String idUtilizador, String nome, String email, String tipo) {
-        this.idUtilizador = idUtilizador;
+    public LoginResponseDTO(String id, String nome, String email, String tipo) {
+        this.id = id;
         this.nome = nome;
         this.email = email;
         this.tipo = tipo;
     }
 
-    public String getIdUtilizador() { return idUtilizador; }
-    public void setIdUtilizador(String idUtilizador) { this.idUtilizador = idUtilizador; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
