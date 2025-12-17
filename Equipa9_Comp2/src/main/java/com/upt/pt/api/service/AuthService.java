@@ -41,7 +41,7 @@ public class AuthService {
     }
 
     // =================================================================
-    //  REGISTO (SOLUÇÃO AQUI)
+    //  REGISTO
     // =================================================================
 
     public Object register(RegistoDTO dto) {
@@ -49,13 +49,7 @@ public class AuthService {
             throw new IllegalArgumentException("Tipo de utilizador é obrigatório.");
         }
 
-        // --- SOLUÇÃO CRÍTICA ---
-        // 1. Geramos a Hash segura (BCrypt) usando a password limpa
-        // O método hashPassword já valida se a senha é forte.
         String passwordHashed = PasswordUtils.hashPassword(dto.getPassword());
-        
-        // 2. Substituímos a password no DTO pela Hash
-        // Assim, quando o 'estudanteService' salvar, guarda a Hash e não o texto limpo
         dto.setPassword(passwordHashed);
 
         String tipo = dto.getTipo().toUpperCase();
@@ -69,7 +63,7 @@ public class AuthService {
     }
 
     // =================================================================
-    //  LOGIN
+    //  LOGIN (CORRIGIDO AQUI!)
     // =================================================================
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
@@ -81,10 +75,9 @@ public class AuthService {
         Optional<Estudante> estOpt = estudanteRepository.findByEmail(dto.getEmail());
         if (estOpt.isPresent()) {
             Estudante e = estOpt.get();
-            // verifyPassword compara a pass limpa (dto) com a hash da BD (e.getPassword)
             if (PasswordUtils.verifyPassword(dto.getPassword(), e.getPassword())) {
-                // Sucesso! Convertemos o ID para String
-                return new LoginResponseDTO(String.valueOf(e.getId()), e.getNome(), e.getEmail(), "ESTUDANTE");
+                // Estudante não tem empresa, passamos null no fim
+                return new LoginResponseDTO(String.valueOf(e.getId()), e.getNome(), e.getEmail(), "ESTUDANTE", null);
             }
         }
 
@@ -93,7 +86,8 @@ public class AuthService {
         if (coordOpt.isPresent()) {
             Coordenador c = coordOpt.get();
             if (PasswordUtils.verifyPassword(dto.getPassword(), c.getPassword())) {
-                return new LoginResponseDTO(String.valueOf(c.getId()), c.getNome(), c.getEmail(), "COORDENADOR");
+                // Coordenador não tem empresa, passamos null no fim
+                return new LoginResponseDTO(String.valueOf(c.getId()), c.getNome(), c.getEmail(), "COORDENADOR", null);
             }
         }
 
@@ -102,11 +96,18 @@ public class AuthService {
         if (repOpt.isPresent()) {
             RepresentanteEmpresa r = repOpt.get();
             if (PasswordUtils.verifyPassword(dto.getPassword(), r.getPassword())) {
-                return new LoginResponseDTO(String.valueOf(r.getId()), r.getNome(), r.getEmail(), "REPRESENTANTE");
+                
+                // --- CORREÇÃO: Extrair o ID da empresa ---
+                String empresaId = null;
+                if (r.getEmpresa() != null) {
+                    empresaId = String.valueOf(r.getEmpresa().getId());
+                }
+
+                // Passamos o empresaId para o DTO
+                return new LoginResponseDTO(String.valueOf(r.getId()), r.getNome(), r.getEmail(), "REPRESENTANTE", empresaId);
             }
         }
 
-        // Se chegou aqui, não encontrou email ou a password não bateu certo com nenhum
         throw new IllegalArgumentException("Email ou password inválidos.");
     }
 }

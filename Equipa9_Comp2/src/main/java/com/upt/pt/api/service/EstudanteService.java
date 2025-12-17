@@ -44,6 +44,10 @@ public class EstudanteService {
     public List<Estudante> getAllEstudantes() {
         return estudanteRepository.findAll();
     }
+    
+    public List<Estudante> getEstudantesByCurso(String cursoId) {
+        return estudanteRepository.findByCursoId(cursoId);
+    }
 
     // READ por id
     public Estudante getEstudanteById(String id) {

@@ -42,6 +42,17 @@ public class EstudanteController {
                 .map(EstudanteMapper::toDTO)
                 .toList();
     }
+    
+    @GetMapping("/curso/{cursoId}")
+    public ResponseEntity<List<EstudanteDTO>> getByCurso(@PathVariable String cursoId) {
+        
+        List<EstudanteDTO> lista = estudanteService.getEstudantesByCurso(cursoId)
+                .stream()
+                .map(EstudanteMapper::toDTO)
+                .toList();
+                
+        return ResponseEntity.ok(lista);
+    }
 
     // READ por id
     // GET /api/estudantes/{id}
