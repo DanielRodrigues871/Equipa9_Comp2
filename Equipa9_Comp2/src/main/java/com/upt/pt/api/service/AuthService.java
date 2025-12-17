@@ -15,6 +15,12 @@ import com.upt.pt.api.repository.EstudanteRepository;
 import com.upt.pt.api.repository.RepresentanteEmpresaRepository;
 import com.upt.pt.api.security.PasswordUtils;
 
+// --- IMPORTAR OS MAPPERS AQUI ---
+import com.upt.pt.api.mapper.CoordenadorMapper;
+// Certifique-se que cria estes dois abaixo também:
+import com.upt.pt.api.mapper.EstudanteMapper;
+import com.upt.pt.api.mapper.RepresentanteEmpresaMapper;
+
 @Service
 public class AuthService {
 
@@ -41,7 +47,7 @@ public class AuthService {
     }
 
     // =================================================================
-    //  REGISTO
+    //  REGISTO (CORRIGIDO PARA EVITAR RECURSÃO)
     // =================================================================
 
     public Object register(RegistoDTO dto) {
@@ -54,16 +60,27 @@ public class AuthService {
 
         String tipo = dto.getTipo().toUpperCase();
 
+        // O segredo é converter para DTO antes de devolver ao Controller.
+        // Assim o Jackson não tenta serializar o Departamento/Curso/Empresa completos.
         return switch (tipo) {
-            case "ESTUDANTE"      -> estudanteService.createFromRegister(dto);
-            case "COORDENADOR"    -> coordenadorService.createFromRegister(dto);
-            case "REPRESENTANTE"  -> representanteService.createFromRegister(dto);
+            case "ESTUDANTE" -> {
+                Estudante e = estudanteService.createFromRegister(dto);
+                yield EstudanteMapper.toDTO(e); // Converter para DTO
+            }
+            case "COORDENADOR" -> {
+                Coordenador c = coordenadorService.createFromRegister(dto);
+                yield CoordenadorMapper.toDTO(c); // Converter para DTO
+            }
+            case "REPRESENTANTE" -> {
+                RepresentanteEmpresa r = representanteService.createFromRegister(dto);
+                yield RepresentanteEmpresaMapper.toDTO(r); // Converter para DTO
+            }
             default -> throw new IllegalArgumentException("Tipo inválido. Use ESTUDANTE, COORDENADOR ou REPRESENTANTE.");
         };
     }
 
     // =================================================================
-    //  LOGIN (CORRIGIDO AQUI!)
+    //  LOGIN
     // =================================================================
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
@@ -76,7 +93,6 @@ public class AuthService {
         if (estOpt.isPresent()) {
             Estudante e = estOpt.get();
             if (PasswordUtils.verifyPassword(dto.getPassword(), e.getPassword())) {
-                // Estudante não tem empresa, passamos null no fim
                 return new LoginResponseDTO(String.valueOf(e.getId()), e.getNome(), e.getEmail(), "ESTUDANTE", null);
             }
         }
@@ -86,7 +102,6 @@ public class AuthService {
         if (coordOpt.isPresent()) {
             Coordenador c = coordOpt.get();
             if (PasswordUtils.verifyPassword(dto.getPassword(), c.getPassword())) {
-                // Coordenador não tem empresa, passamos null no fim
                 return new LoginResponseDTO(String.valueOf(c.getId()), c.getNome(), c.getEmail(), "COORDENADOR", null);
             }
         }
@@ -97,13 +112,11 @@ public class AuthService {
             RepresentanteEmpresa r = repOpt.get();
             if (PasswordUtils.verifyPassword(dto.getPassword(), r.getPassword())) {
                 
-                // --- CORREÇÃO: Extrair o ID da empresa ---
                 String empresaId = null;
                 if (r.getEmpresa() != null) {
                     empresaId = String.valueOf(r.getEmpresa().getId());
                 }
 
-                // Passamos o empresaId para o DTO
                 return new LoginResponseDTO(String.valueOf(r.getId()), r.getNome(), r.getEmail(), "REPRESENTANTE", empresaId);
             }
         }

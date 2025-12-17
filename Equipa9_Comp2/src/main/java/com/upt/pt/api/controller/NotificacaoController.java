@@ -20,6 +20,30 @@ public class NotificacaoController {
         this.service = service;
     }
 
+    // ==========================================
+    // LISTAR NOTIFICAÇÕES
+    // ==========================================
+    
+    // O JavaFX chama "/estudante/{id}", então precisamos deste mapeamento:
+    @GetMapping("/estudante/{id}")
+    public List<NotificacaoDTO> listarPorEstudante(@PathVariable String id) {
+        return listar(id); // Reutiliza a lógica
+    }
+
+    // Adicione isto no NotificacaoController.java
+    @GetMapping("/coordenador/{id}")
+    public List<NotificacaoDTO> listarPorCoordenador(@PathVariable String id) {
+        // Reutiliza a lógica de buscar por utilizador, pois o ID é único
+        return listar(id); 
+    }
+    
+    // Adicione isto para evitar o erro 404
+    @GetMapping("/representante/{id}")
+    public List<NotificacaoDTO> listarPorRepresentante(@PathVariable String id) {
+        return listar(id); // Reutiliza a lógica genérica
+    }
+    
+    // Mantemos este também caso queira usar para Coordenadores/Representantes no futuro
     @GetMapping("/utilizador/{id}")
     public List<NotificacaoDTO> listar(@PathVariable String id) {
         return service.listarPorUtilizador(id)
@@ -28,13 +52,22 @@ public class NotificacaoController {
                 .toList();
     }
 
-    @PostMapping("/{id}/marcar-todas")
-    public void marcarTodas(@PathVariable String id) {
-        service.marcarTodasComoLidas(id);
-    }
+    // ==========================================
+    // MARCAR COMO LIDA
+    // ==========================================
 
-    @PutMapping("/{id}/lida")
+    // O JavaFX faz POST para "/{id}/ler", então ajustamos aqui:
+    @PostMapping("/{id}/ler")
     public void marcarUma(@PathVariable String id) {
         service.marcarComoLida(id);
+    }
+
+    // ==========================================
+    // MARCAR TODAS (EXTRA)
+    // ==========================================
+    
+    @PostMapping("/utilizador/{id}/marcar-todas")
+    public void marcarTodas(@PathVariable String id) {
+        service.marcarTodasComoLidas(id);
     }
 }

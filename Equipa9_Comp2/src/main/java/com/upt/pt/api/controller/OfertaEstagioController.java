@@ -129,11 +129,16 @@ public class OfertaEstagioController {
         return OfertaEstagioMapper.toDTO(o);
     }
 
-    // WORKFLOW: encerrar
-    // POST /api/ofertas/{id}/encerrar
-    @PostMapping("/{id}/encerrar")
-    public OfertaEstagioDTO encerrar(@PathVariable String id) {
-        OfertaEstagio o = ofertaService.encerrarOferta(id);
+ // Endpoint genérico para alterar o status (usado para ARQUIVADA)
+    // PUT /api/ofertas/{id}/status/{status}
+    @PutMapping("/{id}/status/{status}")
+    public OfertaEstagioDTO atualizarStatus(@PathVariable String id, @PathVariable String status) {
+        // Converte a string (ex: "ARQUIVADA") para o Enum StatusOferta
+        StatusOferta novoStatus = StatusOferta.valueOf(status.toUpperCase());
+        
+        // Chama o serviço
+        OfertaEstagio o = ofertaService.atualizarStatus(id, novoStatus);
+        
         return OfertaEstagioMapper.toDTO(o);
     }
 

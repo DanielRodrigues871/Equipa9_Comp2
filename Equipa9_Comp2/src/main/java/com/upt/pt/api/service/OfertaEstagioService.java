@@ -228,10 +228,15 @@ public class OfertaEstagioService {
         return ofertaRepository.save(o);
     }
 
-    public OfertaEstagio encerrarOferta(String id) {
-        OfertaEstagio o = getOfertaById(id);
-        o.setStatus(StatusOferta.ENCERRADO);
-        return ofertaRepository.save(o);
+    public OfertaEstagio atualizarStatus(String id, StatusOferta novoStatus) {
+        // Busca a oferta (lança erro se não existir)
+        OfertaEstagio oferta = getOfertaById(id);
+        
+        // Atualiza o estado
+        oferta.setStatus(novoStatus);
+        
+        // Guarda na base de dados
+        return ofertaRepository.save(oferta);
     }
 
     // =========================

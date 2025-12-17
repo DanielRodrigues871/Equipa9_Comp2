@@ -5,7 +5,7 @@ public enum StatusCandidatura {
     EM_ANALISE("Em Análise"),
     APROVADA("Aprovada"),
     REJEITADA("Rejeitada");
-
+	
     private final String descricao;
 
     StatusCandidatura(String descricao) {

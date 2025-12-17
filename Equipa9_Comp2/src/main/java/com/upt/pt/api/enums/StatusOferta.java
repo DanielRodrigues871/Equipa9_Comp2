@@ -4,7 +4,8 @@ public enum StatusOferta {
     PENDENTE("Pendente"),
     APROVADO("Aprovado"),
     REJEITADO("Rejeitado"),
-    ENCERRADO("Encerrado");
+    ENCERRADO("Encerrado"),
+    ARQUIVADA("Arquivada");
 
     private final String descricao;
 
