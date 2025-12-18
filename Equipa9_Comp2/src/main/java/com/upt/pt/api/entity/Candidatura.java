@@ -145,7 +145,7 @@ public class Candidatura {
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
     }
-
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

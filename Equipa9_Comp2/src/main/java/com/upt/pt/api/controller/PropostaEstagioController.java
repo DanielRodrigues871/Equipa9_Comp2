@@ -45,9 +45,9 @@ public class PropostaEstagioController {
                 .toList();
     }
 
-    // READ por id
+    // READ por id (ALTERADO DE LONG PARA STRING)
     @GetMapping("/{id}")
-    public PropostaEstagioDTO getById(@PathVariable Long id) {
+    public PropostaEstagioDTO getById(@PathVariable String id) {
         PropostaEstagio p = propostaService.getPropostaById(id);
         return PropostaEstagioMapper.toDTO(p);
     }
@@ -79,9 +79,9 @@ public class PropostaEstagioController {
                 .toList();
     }
 
-    // UPDATE
+    // UPDATE (ALTERADO DE LONG PARA STRING)
     @PutMapping("/{id}")
-    public PropostaEstagioDTO update(@PathVariable Long id,
+    public PropostaEstagioDTO update(@PathVariable String id,
                                      @RequestBody PropostaEstagioDTO dto,
                                      @RequestParam String empresaId,
                                      @RequestParam String representanteId) {
@@ -93,23 +93,23 @@ public class PropostaEstagioController {
         return PropostaEstagioMapper.toDTO(atualizada);
     }
 
-    // WORKFLOW: aprovar
+    // WORKFLOW: aprovar (ALTERADO DE LONG PARA STRING)
     @PostMapping("/{id}/aprovar")
-    public PropostaEstagioDTO aprovar(@PathVariable Long id) {
+    public PropostaEstagioDTO aprovar(@PathVariable String id) {
         PropostaEstagio p = propostaService.aprovarProposta(id);
         return PropostaEstagioMapper.toDTO(p);
     }
 
-    // WORKFLOW: rejeitar
+    // WORKFLOW: rejeitar (ALTERADO DE LONG PARA STRING)
     @PostMapping("/{id}/rejeitar")
-    public PropostaEstagioDTO rejeitar(@PathVariable Long id) {
+    public PropostaEstagioDTO rejeitar(@PathVariable String id) {
         PropostaEstagio p = propostaService.rejeitarProposta(id);
         return PropostaEstagioMapper.toDTO(p);
     }
 
-    // DELETE
+    // DELETE (ALTERADO DE LONG PARA STRING)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         propostaService.deleteProposta(id);
         return ResponseEntity.noContent().build();
     }

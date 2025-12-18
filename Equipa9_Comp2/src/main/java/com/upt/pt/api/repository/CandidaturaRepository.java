@@ -4,14 +4,16 @@ import com.upt.pt.api.entity.Candidatura;
 import com.upt.pt.api.enums.StatusCandidatura;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-public interface CandidaturaRepository extends JpaRepository<Candidatura, String> {
+@Repository
+public interface CandidaturaRepository extends JpaRepository<Candidatura, String> { 
 
-    List<Candidatura> findByEstudanteId(String estudanteId);
+    List<Candidatura> findByEstudanteId(String estudanteId); // 
 
-    List<Candidatura> findByOfertaId(String ofertaId);
+    List<Candidatura> findByOfertaId(String ofertaId);       //
 
     List<Candidatura> findByStatus(StatusCandidatura status);
     
@@ -19,5 +21,4 @@ public interface CandidaturaRepository extends JpaRepository<Candidatura, String
 
     @Query("SELECT COUNT(c) FROM Candidatura c")
     long totalCandidaturas();
-
 }

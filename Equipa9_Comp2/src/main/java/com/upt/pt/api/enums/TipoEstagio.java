@@ -2,7 +2,8 @@ package com.upt.pt.api.enums;
 
 public enum TipoEstagio {
     CURRICULAR("Curricular"),
-    EXTRACURRICULAR("Extracurricular");
+    EXTRACURRICULAR("Extracurricular"),
+    VERÂO("Verão");
 
     private final String descricao;
 

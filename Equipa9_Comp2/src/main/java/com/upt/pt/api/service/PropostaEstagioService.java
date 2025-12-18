@@ -46,6 +46,8 @@ public class PropostaEstagioService {
         if (areasIds != null && !areasIds.isEmpty()) {
             List<AreaEstagio> areas = new ArrayList<>();
             for (String areaId : areasIds) {
+                // Se AreaEstagio usar Long, manter Long. Se for String/UUID, usar String.
+                // Assumindo String para consistência com o resto do projeto:
                 AreaEstagio area = areaRepository.findById(areaId)
                         .orElseThrow(() -> new IllegalArgumentException("Área não encontrada: " + areaId));
                 areas.add(area);
@@ -64,8 +66,8 @@ public class PropostaEstagioService {
         return propostaRepository.findAll();
     }
 
-    // READ por id
-    public PropostaEstagio getPropostaById(Long id) {
+    // READ por id (ALTERADO DE LONG PARA STRING)
+    public PropostaEstagio getPropostaById(String id) {
         return propostaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Proposta não encontrada."));
     }
@@ -85,8 +87,8 @@ public class PropostaEstagioService {
         return propostaRepository.findByStatus(status);
     }
 
-    // UPDATE
-    public PropostaEstagio updateProposta(Long id,
+    // UPDATE (ALTERADO DE LONG PARA STRING)
+    public PropostaEstagio updateProposta(String id,
                                           PropostaEstagio dados,
                                           String empresaId,
                                           String representanteId,
@@ -128,21 +130,21 @@ public class PropostaEstagioService {
         return propostaRepository.save(existente);
     }
 
-    // WORKFLOW
-    public PropostaEstagio aprovarProposta(Long id) {
+    // WORKFLOW (ALTERADO DE LONG PARA STRING)
+    public PropostaEstagio aprovarProposta(String id) {
         PropostaEstagio p = getPropostaById(id);
         p.setStatus("APROVADA");
         return propostaRepository.save(p);
     }
 
-    public PropostaEstagio rejeitarProposta(Long id) {
+    public PropostaEstagio rejeitarProposta(String id) {
         PropostaEstagio p = getPropostaById(id);
         p.setStatus("REJEITADA");
         return propostaRepository.save(p);
     }
 
-    // DELETE
-    public void deleteProposta(Long id) {
+    // DELETE (ALTERADO DE LONG PARA STRING)
+    public void deleteProposta(String id) {
         PropostaEstagio p = getPropostaById(id);
         propostaRepository.delete(p);
     }
@@ -174,8 +176,9 @@ public class PropostaEstagioService {
         }
 
         String tipo = p.getTipo();
-        if (tipo == null || (!tipo.equals("CURRICULAR") && !tipo.equals("EXTRA_CURRICULAR"))) {
-            throw new IllegalArgumentException("O tipo deve ser 'CURRICULAR' ou 'EXTRA_CURRICULAR'.");
+        // Adicionei "VERAO" aqui para bater certo com o Frontend
+        if (tipo == null || (!tipo.equals("CURRICULAR") && !tipo.equals("EXTRACURRICULAR") && !tipo.equals("VERAO"))) {
+            throw new IllegalArgumentException("O tipo deve ser 'CURRICULAR', 'EXTRACURRICULAR' ou 'VERAO'.");
         }
 
         if (empresaId == null || empresaId.isBlank()) {
@@ -190,10 +193,6 @@ public class PropostaEstagioService {
         }
         if (!representanteRepository.existsById(representanteId)) {
             throw new IllegalArgumentException("O representante indicado não existe.");
-        }
-
-        if (p.isRemunerado() && p.getValorRemuneracao() <= 0) {
-            throw new IllegalArgumentException("Se o estágio for remunerado, o valor deve ser positivo.");
         }
     }
 }
